@@ -311,7 +311,7 @@ jobs:
             "${BASE_NAME}_web.zip"
             "${BASE_NAME}_macos.zip"
             "${BASE_NAME}_macos.mono.zip"
-            "${BASE_NAME}_android.zip"
+            "${BASE_NAME}_android.zip" 
             "${BASE_NAME}_android.meta.zip"
           )
 
