@@ -243,7 +243,7 @@ jobs:
       - name: Create tar.gz Archive
         run: |
           ls -la ${{github.workspace}}/bin/
-          ls -la
+          ls -la bin/
           pwd
           tar -czvf ${{ matrix.cache-name }}-${{ github.event.client_payload.type || 'nightly' }}.tar.gz -C ${{github.workspace}}/bin/ .
 
