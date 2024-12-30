@@ -242,8 +242,8 @@ jobs:
 
       - name: Create tar.gz Archive
         run: |
-          ls -la ./bin/
-          tar -czvf ${{ matrix.cache-name }}-${{ github.event.client_payload.type || 'nightly' }}.tar.gz -C ./bin/ .
+          ls -la ${{github.workspace}}/bin/
+          tar -czvf ${{ matrix.cache-name }}-${{ github.event.client_payload.type || 'nightly' }}.tar.gz -C ${{github.workspace}}/bin/ .
 
       - uses: BetaHuhn/do-spaces-action@v2
         with:
@@ -671,6 +671,7 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
+
       - name: Setup Android SDK
         uses: amyu/setup-android@v4
 
@@ -910,10 +911,10 @@ jobs:
         uses: ./.github/actions/multi-uncompress-tar-gz
         with:
           names: |
-            android-editor-x86_32-${{ github.event.client_payload.type || 'nightly' }}
-            android-editor-x86_64-${{ github.event.client_payload.type || 'nightly' }}
-            android-editor-arm32-${{ github.event.client_payload.type || 'nightly' }}
-            android-editor-arm64-${{ github.event.client_payload.type || 'nightly' }}
+            android-template-x86_32-${{ github.event.client_payload.type || 'nightly' }}
+            android-template-x86_64-${{ github.event.client_payload.type || 'nightly' }}
+            android-template-arm32-${{ github.event.client_payload.type || 'nightly' }}
+            android-template-arm64-${{ github.event.client_payload.type || 'nightly' }}
           input_dir: ${{ github.workspace }}/downloads
           output_dir: ${{ github.workspace }}/bin
           without_folder: true
@@ -923,10 +924,10 @@ jobs:
         uses: ./.github/actions/multi-uncompress-tar-gz
         with:
           names: |
-            android-editor-x86_32-mono-${{ github.event.client_payload.type || 'nightly' }}
-            android-editor-x86_64-mono-${{ github.event.client_payload.type || 'nightly' }}
-            android-editor-arm32-mono-${{ github.event.client_payload.type || 'nightly' }}
-            android-editor-arm64-mono-${{ github.event.client_payload.type || 'nightly' }}
+            android-template-x86_32-mono-${{ github.event.client_payload.type || 'nightly' }}
+            android-template-x86_64-mono-${{ github.event.client_payload.type || 'nightly' }}
+            android-template-arm32-mono-${{ github.event.client_payload.type || 'nightly' }}
+            android-template-arm64-mono-${{ github.event.client_payload.type || 'nightly' }}
           input_dir: ${{ github.workspace }}/downloads
           output_dir: ${{ github.workspace }}/bin
           without_folder: true
