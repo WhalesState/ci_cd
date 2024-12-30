@@ -772,7 +772,7 @@ jobs:
     #runs-on: pogr-sponsored
     runs-on: "ubuntu-20.04"
     name: Building Android ${{ matrix.name }}
-    needs: template-check
+    needs: [ template-check, build-templates ]
     if: ${{ needs.template-check.outputs.compile == 'true' || github.event.client_payload.force }}
     strategy:
       fail-fast: false
