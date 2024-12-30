@@ -1,0 +1,85 @@
+name: Delete Files/Folders in Place Action
+description: Deletes files or folders based on provided inputs.
+
+inputs:
+  input_dir:
+    description: The directory containing the files or folders to delete.
+    required: true
+  names:
+    description: A YAML array of directory names to check within input_dir.
+    required: true
+  items_to_delete:
+    description: A YAML array of filenames or folder names to delete.
+    required: true
+
+outputs:
+  deleted_items:
+    description: A list of paths to the deleted files or folders.
+    value: ${{ steps.process_items.outputs.deleted_items }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Validate Input Parameters
+      id: validate_inputs
+      shell: bash
+      run: |
+        INPUT_DIR=${{ inputs.input_dir }}
+        NAMES=$(echo "${{ inputs.names }}" | awk NF)
+        ITEMS_TO_DELETE=$(echo "${{ inputs.items_to_delete }}" | awk NF)
+
+        echo "## Input Validation" >> $GITHUB_STEP_SUMMARY
+        echo "Input Directory: $INPUT_DIR" >> $GITHUB_STEP_SUMMARY
+
+        if [ -z "$NAMES" ] || [ -z "$ITEMS_TO_DELETE" ]; then
+          echo "Error: 'names' and 'items_to_delete' cannot be empty." >> $GITHUB_STEP_SUMMARY
+          exit 1
+        fi
+
+        echo "Input parameters validated successfully." >> $GITHUB_STEP_SUMMARY
+
+    - name: Delete Files/Folders
+      id: process_items
+      shell: bash
+      run: |
+        INPUT_DIR=${{ inputs.input_dir }}
+        NAMES=$(echo "${{ inputs.names }}" | awk NF)
+        ITEMS_TO_DELETE=$(echo "${{ inputs.items_to_delete }}" | awk NF)
+
+        echo "## Listing Input Directory Contents" >> $GITHUB_STEP_SUMMARY
+        ls -la "$INPUT_DIR" >> $GITHUB_STEP_SUMMARY
+
+        # Initialize array to store deleted item paths
+        DELETED_ITEMS=()
+
+        # Loop through each directory in names
+        echo "$NAMES" | while IFS= read -r NAME; do
+          TARGET_DIR="$INPUT_DIR/$NAME"
+
+          if [ ! -d "$TARGET_DIR" ]; then
+            echo "Error: Directory $TARGET_DIR does not exist. Skipping." >> $GITHUB_STEP_SUMMARY
+            continue
+          fi
+
+          # Loop through each item to delete in the target directory
+          echo "$ITEMS_TO_DELETE" | while IFS= read -r ITEM; do
+            TARGET_ITEM="$TARGET_DIR/$ITEM"
+
+            if [ ! -e "$TARGET_ITEM" ]; then
+              echo "Error: File or folder $TARGET_ITEM does not exist. Skipping." >> $GITHUB_STEP_SUMMARY
+              continue
+            fi
+
+            rm -rf "$TARGET_ITEM"
+            if [ $? -eq 0 ]; then
+              echo "Successfully deleted $TARGET_ITEM" >> $GITHUB_STEP_SUMMARY
+              DELETED_ITEMS+=("$TARGET_ITEM")
+            else
+              echo "Error: Failed to delete $TARGET_ITEM" >> $GITHUB_STEP_SUMMARY
+            fi
+          done
+        done
+
+        # Convert deleted items array to JSON and set output
+        echo "Deleted items: ${DELETED_ITEMS[@]}" >> $GITHUB_STEP_SUMMARY
+        echo "deleted_items=$(echo "${DELETED_ITEMS[@]}" | jq -c -R 'split(" ")')" >> $GITHUB_OUTPUT

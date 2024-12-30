@@ -34,10 +34,6 @@ on:
         description: "Build Status for Android"
         required: true
         type: string
-      ios-build:
-        description: "Build Status for iOS"
-        required: true
-        type: string
 # Global Settings
 env:
   # Used for the cache key. Add version suffix to force clean build.
@@ -64,7 +60,6 @@ jobs:
           echo "  - macos-build: ${{ inputs.macos-build }}"
           echo "  - linux-build: ${{ inputs.linux-build }}"
           echo "  - android-build: ${{ inputs.android-build }}"
-          echo "  - ios-build: ${{ inputs.ios-build }}"
           echo "--- End of Inputs ---"
 
       - name: Are we Deploying?
@@ -78,8 +73,7 @@ jobs:
                   "${{ inputs.windows-build }}" == "success" && 
                   "${{ inputs.macos-build }}" == "success" && 
                   "${{ inputs.linux-build }}" == "success" && 
-                  "${{ inputs.android-build }}" == "success" && 
-                  "${{ inputs.ios-build }}" == "success" ]]; then
+                  "${{ inputs.android-build }}" == "success" ]]; then
             echo "All builds succeeded. Proceeding."  >> $GITHUB_STEP_SUMMARY
             echo "proceed=true" >> $GITHUB_OUTPUT
           else
@@ -97,7 +91,6 @@ jobs:
           echo "  - macos-build: ${{ inputs.macos-build }}" >> $GITHUB_STEP_SUMMARY
           echo "  - linux-build: ${{ inputs.linux-build }}" >> $GITHUB_STEP_SUMMARY
           echo "  - android-build: ${{ inputs.android-build }}" >> $GITHUB_STEP_SUMMARY
-          echo "  - ios-build: ${{ inputs.ios-build }}" >> $GITHUB_STEP_SUMMARY
           echo "Proceed Output: ${{ steps.evaluate.outputs.proceed }}" >> $GITHUB_STEP_SUMMARY
 
       - name: Final Debug Output
@@ -198,6 +191,18 @@ jobs:
             android-editor-${{ github.event.client_payload.type || 'nightly' }}
             android-editor-${{ github.event.client_payload.type || 'nightly' }}-meta
             android-editor-${{ github.event.client_payload.type || 'nightly' }}-meta
+            windows-editor-arm64-${{ github.event.client_payload.type || 'nightly' }}
+            windows-editor-arm64-${{ github.event.client_payload.type || 'nightly' }}
+            windows-editor-mono-arm64-${{ github.event.client_payload.type || 'nightly' }}
+            windows-editor-mono-arm64-${{ github.event.client_payload.type || 'nightly' }}
+            windows-editor-arm32-${{ github.event.client_payload.type || 'nightly' }}
+            windows-editor-arm32-${{ github.event.client_payload.type || 'nightly' }}
+            windows-editor-mono-arm32-${{ github.event.client_payload.type || 'nightly' }}
+            windows-editor-mono-arm32-${{ github.event.client_payload.type || 'nightly' }}
+            linux-editor-arm64-${{ github.event.client_payload.type || 'nightly' }}
+            linux-editor-mono-arm64-${{ github.event.client_payload.type || 'nightly' }}
+            linux-editor-arm32-${{ github.event.client_payload.type || 'nightly' }}
+            linux-editor-mono-arm32-${{ github.event.client_payload.type || 'nightly' }}
           filename_old: |
             blazium.linuxbsd.editor.x86_64
             blazium.linuxbsd.editor.x86_64.mono
@@ -218,6 +223,18 @@ jobs:
             android_editor-android-debug.apk
             android_editor-horizonos-debug.aab
             android_editor-horizonos-debug.apk
+            blazium.windows.editor.arm64.llvm.exe
+            blazium.windows.editor.arm64.llvm.console.exe
+            blazium.windows.editor.arm64.llvm.mono.exe
+            blazium.windows.editor.arm64.llvm.mono.console.exe
+            blazium.windows.editor.arm32.llvm.exe
+            blazium.windows.editor.arm32.llvm.console.exe
+            blazium.windows.editor.arm32.llvm.mono.exe
+            blazium.windows.editor.arm32.llvm.mono.console.exe
+            blazium.linuxbsd.editor.arm64.llvm
+            blazium.linuxbsd.editor.arm64.llvm.mono
+            blazium.linuxbsd.editor.arm32.llvm
+            blazium.linuxbsd.editor.arm32.llvm.mono
           filename_new: |
             ${{ env.BASE_NAME }}_linux.x86_64
             ${{ env.BASE_NAME }}_linux.mono.x86_64
@@ -238,7 +255,50 @@ jobs:
             ${{ env.BASE_NAME }}_android.apk
             ${{ env.BASE_NAME }}_android.meta.aab
             ${{ env.BASE_NAME }}_android.meta.apk
+            ${{ env.BASE_NAME }}_windows.arm64.exe
+            ${{ env.BASE_NAME }}_windows_console.arm64.exe
+            ${{ env.BASE_NAME }}_windows.mono.arm64.exe
+            ${{ env.BASE_NAME }}_windows_console.mono.arm64.exe
+            ${{ env.BASE_NAME }}_windows.arm32.exe
+            ${{ env.BASE_NAME }}_windows_console.arm32.exe
+            ${{ env.BASE_NAME }}_windows.mono.arm32.exe
+            ${{ env.BASE_NAME }}_windows_console.mono.arm32.exe
+            ${{ env.BASE_NAME }}_linux.arm64
+            ${{ env.BASE_NAME }}_linux.mono.arm64
+            ${{ env.BASE_NAME }}_linux.arm32
+            ${{ env.BASE_NAME }}_linux.mono.arm32
           input_dir: ${{ github.workspace }}/extracted
+
+
+      - name: Delete Editor Filenames/Folders in-Place
+        uses: ./.github/actions/multi-delete-inplace
+        with:
+          names: |
+            linux-editor-64bit-${{ github.event.client_payload.type || 'nightly' }}
+            linux-editor-mono-64bit-${{ github.event.client_payload.type || 'nightly' }}
+            linux-editor-mono-32bit-${{ github.event.client_payload.type || 'nightly' }}
+            linux-editor-32bit-${{ github.event.client_payload.type || 'nightly' }}
+            windows-editor-mono-64bit-${{ github.event.client_payload.type || 'nightly' }}
+            windows-editor-64bit-${{ github.event.client_payload.type || 'nightly' }}
+            windows-editor-mono-32bit-${{ github.event.client_payload.type || 'nightly' }}
+            windows-editor-32bit-${{ github.event.client_payload.type || 'nightly' }}
+            web-editor-${{ github.event.client_payload.type || 'nightly' }}
+            macos-editor-${{ github.event.client_payload.type || 'nightly' }}
+            macos-editor-mono-${{ github.event.client_payload.type || 'nightly' }}
+            android-editor-${{ github.event.client_payload.type || 'nightly' }}
+            android-editor-${{ github.event.client_payload.type || 'nightly' }}-meta
+            windows-editor-arm64-${{ github.event.client_payload.type || 'nightly' }}
+            windows-editor-mono-arm64-${{ github.event.client_payload.type || 'nightly' }}
+            windows-editor-arm32-${{ github.event.client_payload.type || 'nightly' }}
+            windows-editor-mono-arm32-${{ github.event.client_payload.type || 'nightly' }}
+            linux-editor-arm64-${{ github.event.client_payload.type || 'nightly' }}
+            linux-editor-mono-arm64-${{ github.event.client_payload.type || 'nightly' }}
+            linux-editor-arm32-${{ github.event.client_payload.type || 'nightly' }}
+            linux-editor-mono-arm32-${{ github.event.client_payload.type || 'nightly' }}
+          input_dir: ${{ github.workspace }}/extracted
+          items_to_delete: |
+            build_deps/
+
 
       - name: Rename Folders then Zip/Move Folders
         uses: ./.github/actions/multi-folder-zip
@@ -257,6 +317,14 @@ jobs:
             macos-editor-mono-${{ github.event.client_payload.type || 'nightly' }}
             android-editor-${{ github.event.client_payload.type || 'nightly' }}
             android-editor-${{ github.event.client_payload.type || 'nightly' }}-meta
+            windows-editor-arm64-${{ github.event.client_payload.type || 'nightly' }}
+            windows-editor-mono-arm64-${{ github.event.client_payload.type || 'nightly' }}
+            windows-editor-arm32-${{ github.event.client_payload.type || 'nightly' }}
+            windows-editor-mono-arm32-${{ github.event.client_payload.type || 'nightly' }}
+            linux-editor-arm64-${{ github.event.client_payload.type || 'nightly' }}
+            linux-editor-mono-arm64-${{ github.event.client_payload.type || 'nightly' }}
+            linux-editor-arm32-${{ github.event.client_payload.type || 'nightly' }}
+            linux-editor-mono-arm32-${{ github.event.client_payload.type || 'nightly' }}
           filename_new: |
             ${{ env.BASE_NAME }}_linux.x86_64
             ${{ env.BASE_NAME }}_linux.mono.x86_64
@@ -271,6 +339,15 @@ jobs:
             ${{ env.BASE_NAME }}_macos.mono
             ${{ env.BASE_NAME }}_android
             ${{ env.BASE_NAME }}_android.meta
+            ${{ env.BASE_NAME }}_windows.arm64
+            ${{ env.BASE_NAME }}_windows.mono.arm64
+            ${{ env.BASE_NAME }}_windows.arm32
+            ${{ env.BASE_NAME }}_windows.mono.arm32
+            ${{ env.BASE_NAME }}_linux.arm64
+            ${{ env.BASE_NAME }}_linux.mono.arm64
+            ${{ env.BASE_NAME }}_linux.arm32
+            ${{ env.BASE_NAME }}_linux.mono.arm32
+
           input_dir: ${{ github.workspace }}/extracted
           output_dir: ${{ github.workspace }}/editors
 
@@ -313,6 +390,14 @@ jobs:
             "${BASE_NAME}_macos.mono.zip"
             "${BASE_NAME}_android.zip" 
             "${BASE_NAME}_android.meta.zip"
+            "${BASE_NAME}_windows.arm64.zip"
+            "${BASE_NAME}_windows.mono.arm64.zip"
+            "${BASE_NAME}_windows.arm32.zip"
+            "${BASE_NAME}_windows.mono.arm32.zip"
+            "${BASE_NAME}_linux.arm64.zip"
+            "${BASE_NAME}_linux.mono.arm64.zip"
+            "${BASE_NAME}_linux.arm32.zip"
+            "${BASE_NAME}_linux.mono.arm32.zip"
           )
 
           # Process each file
@@ -373,6 +458,14 @@ jobs:
             ${{ github.workspace }}/editors/${{ env.BASE_NAME }}_macos.mono.zip
             ${{ github.workspace }}/editors/${{ env.BASE_NAME }}_android.zip
             ${{ github.workspace }}/editors/${{ env.BASE_NAME }}_android.meta.zip
+            ${{ github.workspace }}/editors/${{ env.BASE_NAME }}_windows.arm64.zip
+            ${{ github.workspace }}/editors/${{ env.BASE_NAME }}_windows.mono.arm64.zip
+            ${{ github.workspace }}/editors/${{ env.BASE_NAME }}_windows.arm32.zip
+            ${{ github.workspace }}/editors/${{ env.BASE_NAME }}_windows.mono.arm32.zip
+            ${{ github.workspace }}/editors/${{ env.BASE_NAME }}_linux.arm64.zip
+            ${{ github.workspace }}/editors/${{ env.BASE_NAME }}_linux.mono.arm64.zip
+            ${{ github.workspace }}/editors/${{ env.BASE_NAME }}_linux.arm32.zip
+            ${{ github.workspace }}/editors/${{ env.BASE_NAME }}_linux.mono.arm32.zip
             ${{ github.workspace }}/editors/editors.json
           space_name: ${{ secrets.DO_SPACE_NAME }}
           space_region: ${{ secrets.DO_SPACE_REGION }}

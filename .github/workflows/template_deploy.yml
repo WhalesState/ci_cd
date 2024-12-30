@@ -14,11 +14,36 @@ on:
         description: "New Version that'll be Deployed"
         required: true
         type: string
+      monoglue-build:
+        description: "Build Status for Monoglue"
+        required: true
+        type: string
+      windows-build:
+        description: "Build Status for Windows"
+        required: true
+        type: string
+      macos-build:
+        description: "Build Status for MacOS"
+        required: true
+        type: string
+      linux-build:
+        description: "Build Status for Linux"
+        required: true
+        type: string
+      android-build:
+        description: "Build Status for Android"
+        required: true
+        type: string
+      ios-build:
+        description: "Build Status for iOS"
+        required: true
+        type: string
+
 # Global Settings
 env:
   # Used for the cache key. Add version suffix to force clean build.
   GODOT_BASE_BRANCH: blazium-dev
-  BASE_NAME: Blazium_v
+  BASE_NAME: Blazium_v${{ inputs.new_version }}
 
 concurrency:
   group: ci-${{github.actor}}-${{ github.event.client_payload.type || 'nightly' }}-template-deploy
@@ -141,6 +166,8 @@ jobs:
             linux-template-arm32-${{ github.event.client_payload.type || 'nightly' }}
             linux-debug-template-mono-arm32-${{ github.event.client_payload.type || 'nightly' }}
             linux-debug-template-arm32-${{ github.event.client_payload.type || 'nightly' }}
+            android-template-${{ github.event.client_payload.type || 'nightly' }}
+            android-template-mono-${{ github.event.client_payload.type || 'nightly' }}
           run_id: ${{ inputs.runner_id }}
           cerebro_url: ${{ secrets.CEREBRO_URL }}
           cerebro_auth: ${{ secrets.BLAZIUM_AUTH }}
@@ -194,6 +221,8 @@ jobs:
             linux-template-arm32-${{ github.event.client_payload.type || 'nightly' }}
             linux-debug-template-mono-arm32-${{ github.event.client_payload.type || 'nightly' }}
             linux-debug-template-arm32-${{ github.event.client_payload.type || 'nightly' }}
+            android-template-${{ github.event.client_payload.type || 'nightly' }}
+            android-template-mono-${{ github.event.client_payload.type || 'nightly' }}
           input_dir: ${{ github.workspace }}/downloads
           output_dir: ${{ github.workspace }}/extracted
 
@@ -352,8 +381,6 @@ jobs:
             linux-debug-template-64bit-${{ github.event.client_payload.type || 'nightly' }}
             linux-template-32bit-${{ github.event.client_payload.type || 'nightly' }}
             linux-debug-template-32bit-${{ github.event.client_payload.type || 'nightly' }}
-
-            
             linux-template-arm64-${{ github.event.client_payload.type || 'nightly' }}
             linux-debug-template-arm64-${{ github.event.client_payload.type || 'nightly' }}
             linux-template-arm32-${{ github.event.client_payload.type || 'nightly' }}
@@ -363,10 +390,10 @@ jobs:
             blazium.linuxbsd.template_debug.x86_64
             blazium.linuxbsd.template_release.x86_32
             blazium.linuxbsd.template_debug.x86_32
-            blazium.linuxbsd.template_release.arm64
-            blazium.linuxbsd.template_debug.arm64
-            blazium.linuxbsd.template_release.arm32
-            blazium.linuxbsd.template_debug.arm32
+            blazium.linuxbsd.template_release.arm64.llvm
+            blazium.linuxbsd.template_debug.arm64.llvm
+            blazium.linuxbsd.template_release.arm32.llvm
+            blazium.linuxbsd.template_debug.arm32.llvm
           filename_new: |
             linux_release.x86_64
             linux_debug.x86_64
@@ -396,10 +423,10 @@ jobs:
             blazium.linuxbsd.template_debug.x86_64.mono
             blazium.linuxbsd.template_release.x86_32.mono
             blazium.linuxbsd.template_debug.x86_32.mono
-            blazium.linuxbsd.template_release.arm64.mono
-            blazium.linuxbsd.template_debug.arm64.mono
-            blazium.linuxbsd.template_release.arm32.mono
-            blazium.linuxbsd.template_debug.arm32.mono
+            blazium.linuxbsd.template_release.arm64.llvm.mono
+            blazium.linuxbsd.template_debug.arm64.llvm.mono
+            blazium.linuxbsd.template_release.arm32.llvm.mono
+            blazium.linuxbsd.template_debug.arm32.llvm.mono
           filename_new: |
             linux_release.x86_64
             linux_debug.x86_64
@@ -439,6 +466,42 @@ jobs:
           filename_new: |
             macos.zip
             ios.zip
+          input_dir: ${{ github.workspace }}/extracted
+          output_dir: ${{ github.workspace }}/templates/mono
+
+      - name: Copy & Rename Android Templates
+        uses: ./.github/actions/multi-copy-rename
+        with:
+          names: |
+            android-template-${{ github.event.client_payload.type || 'nightly' }}
+            android-template-${{ github.event.client_payload.type || 'nightly' }}
+            android-template-${{ github.event.client_payload.type || 'nightly' }}
+          filename_old: |
+            android_source.zip
+            android_debug.apk
+            android_release.apk
+          filename_new: |
+            android_source.zip
+            android_debug.apk
+            android_release.apk
+          input_dir: ${{ github.workspace }}/extracted
+          output_dir: ${{ github.workspace }}/templates
+
+      - name: Copy & Rename Android Templates (mono)
+        uses: ./.github/actions/multi-copy-rename
+        with:
+          names: |
+            android-template-${{ github.event.client_payload.type || 'nightly' }}
+            android-template-${{ github.event.client_payload.type || 'nightly' }}
+            android-template-${{ github.event.client_payload.type || 'nightly' }}
+          filename_old: |
+            android_source.zip
+            android_monoDebug.apk
+            android_monoRelease.apk
+          filename_new: |
+            android_source.zip
+            android_debug.apk
+            android_release.apk
           input_dir: ${{ github.workspace }}/extracted
           output_dir: ${{ github.workspace }}/templates/mono
 
@@ -518,7 +581,7 @@ jobs:
           # Define variables
           TARGET_DIR="${GITHUB_WORKSPACE}/templates/mono"
           RELDIR="${GITHUB_WORKSPACE}/export"
-          ZIP_FILE="${RELDIR}/${BASE_NAME}${{ inputs.new_version }}_mono_export_templates.tpz"
+          ZIP_FILE="${RELDIR}/${BASE_NAME}_mono_export_templates.tpz"
 
           # Ensure the target directory exists
           if [ ! -d "$TARGET_DIR" ]; then
@@ -555,7 +618,7 @@ jobs:
           # Define variables
           TARGET_DIR="${GITHUB_WORKSPACE}/templates"
           RELDIR="${GITHUB_WORKSPACE}/export"
-          ZIP_FILE="${RELDIR}/${BASE_NAME}${{ inputs.new_version }}_export_templates.tpz"
+          ZIP_FILE="${RELDIR}/${BASE_NAME}_export_templates.tpz"
 
           # Ensure the target directory exists
           if [ ! -d "$TARGET_DIR" ]; then
@@ -588,13 +651,13 @@ jobs:
       - name: Generate JSON with File Info and Checksums
         shell: bash
         env:
-          BASE_NAME: Blazium_v
+          BASE_NAME: ${{ env.BASE_NAME }}
           URL_BASE: ${{ secrets.CDN_URL }}/${{ github.event.client_payload.type || 'nightly' }}/${{ inputs.new_version }}
         run: |
           # Define file paths and output file
           TARGET_DIR="${GITHUB_WORKSPACE}/export"
-          BASE_FILE="${TARGET_DIR}/${BASE_NAME}${{ inputs.new_version }}_export_templates.tpz"
-          MONO_FILE="${TARGET_DIR}/${BASE_NAME}${{ inputs.new_version }}_mono_export_templates.tpz"
+          BASE_FILE="${TARGET_DIR}/${BASE_NAME}_export_templates.tpz"
+          MONO_FILE="${TARGET_DIR}/${BASE_NAME}_mono_export_templates.tpz"
           OUTPUT_FILE="${TARGET_DIR}/details.json"
 
           # Ensure files exist
@@ -673,7 +736,7 @@ jobs:
           secret_key: ${{ secrets.DO_SECRET_KEY }}
           space_name: ${{ secrets.DO_SPACE_NAME }}
           space_region: ${{ secrets.DO_SPACE_REGION }}
-          source: export/${{ env.BASE_NAME }}${{ inputs.new_version }}_export_templates.tpz
+          source: export/${{ env.BASE_NAME }}_export_templates.tpz
           out_dir: ${{ github.event.client_payload.type || 'nightly' }}/${{ inputs.new_version }}
 
       - uses: BetaHuhn/do-spaces-action@v2
@@ -682,7 +745,7 @@ jobs:
           secret_key: ${{ secrets.DO_SECRET_KEY }}
           space_name: ${{ secrets.DO_SPACE_NAME }}
           space_region: ${{ secrets.DO_SPACE_REGION }}
-          source: export/${{ env.BASE_NAME }}${{ inputs.new_version }}_mono_export_templates.tpz
+          source: export/${{ env.BASE_NAME }}_mono_export_templates.tpz
           out_dir: ${{ github.event.client_payload.type || 'nightly' }}/${{ inputs.new_version }}
 
       - uses: BetaHuhn/do-spaces-action@v2
@@ -702,24 +765,3 @@ jobs:
           space_region: ${{ secrets.DO_SPACE_REGION }}
           source: export/details.json
           out_dir: ${{ github.event.client_payload.type || 'nightly' }}/${{ inputs.new_version }}
-
-
-
-      # - name: Uncompress File
-      #   id: new-folder
-      #   uses: ./.github/actions/uncompress-tar-gz
-      #   with:
-      #     file_path: ${{ steps.download-1.outputs.file_path }}
-      #     output_dir: ${{ github.workspace }}/extracted
-
-      # - name: Update File
-      #   shell: bash
-      #   run: |
-      #     # Extract file path from the previous step
-      #     CUR_FOLDER="${{ steps.new-folder.outputs.target_folder }}"
-      #     NEW_FOLDER="${{ github.workspace }}/templates"
-      #     CUR_FILE="blazium.linuxbsd.template_release.x86_64"
-      #     NEW_FILE="linux_release.x86_64"
-
-      #     mkdir -r $NEW_FOLDER
-      #     cp $CUR_FOLDER/$CUR_FILE $NEW_FOLDER/$NEW_FILE
