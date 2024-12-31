@@ -109,25 +109,29 @@ jobs:
             cache-name: android-editor-arm32
             mono: false
             arch: arm32
-            folder: platform/android/java/lib/libs/tools/debug/armeabi-v7a
+            folder: platform/android/java/lib/libs/tools/debug
+            full: platform/android/java/lib/libs/tools/debug/armeabi-v7a
 
           - name: Editor (arm64)
             cache-name: android-editor-arm64
             mono: false
             arch: arm64
-            folder: platform/android/java/lib/libs/tools/debug/arm64-v8a
+            folder: platform/android/java/lib/libs/tools/debug
+            full: platform/android/java/lib/libs/tools/debug/arm64-v8a
 
           - name: Editor (x86_64)
             cache-name: android-editor-x86_64
             mono: false
             arch: x86_64
-            folder: platform/android/java/lib/libs/tools/debug/x86_64
+            folder: platform/android/java/lib/libs/tools/debug
+            full: platform/android/java/lib/libs/tools/debug/x86_64
 
           - name: Editor (x86_32)
             cache-name: android-editor-x86_32
             mono: false
             arch: x86_32
-            folder: platform/android/java/lib/libs/tools/debug/x86
+            folder: platform/android/java/lib/libs/tools/debug
+            full: platform/android/java/lib/libs/tools/debug/x86
 
     steps:
       - name: Checkout Repository
