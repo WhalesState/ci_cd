@@ -109,21 +109,25 @@ jobs:
             cache-name: android-editor-arm32
             mono: false
             arch: arm32
+            folder: platform/android/java/lib/libs/tools/debug/armeabi-v7a
 
           - name: Editor (arm64)
             cache-name: android-editor-arm64
             mono: false
             arch: arm64
+            folder: platform/android/java/lib/libs/tools/debug/arm64-v8a
 
           - name: Editor (x86_64)
             cache-name: android-editor-x86_64
             mono: false
             arch: x86_64
+            folder: platform/android/java/lib/libs/tools/debug/x86_64
 
           - name: Editor (x86_32)
             cache-name: android-editor-x86_32
             mono: false
             arch: x86_32
+            folder: platform/android/java/lib/libs/tools/debug/x86
 
     steps:
       - name: Checkout Repository
@@ -242,11 +246,8 @@ jobs:
 
       - name: Create tar.gz Archive
         run: |
-          ls -la ${{github.workspace}}/bin/
-          ls -la platform/android/java/lib/libs/tools/
-          ls -la platform/android/java/lib/libs/tools/debug/
-          pwd
-          tar -czvf ${{ matrix.cache-name }}-${{ github.event.client_payload.type || 'nightly' }}.tar.gz -C ${{github.workspace}}/bin/ .
+          ls -la ${{github.workspace}}/${{ matrix.folder }}
+          tar -czvf ${{ matrix.cache-name }}-${{ github.event.client_payload.type || 'nightly' }}.tar.gz -C ${{github.workspace}}/${{ matrix.folder }} .
 
       - uses: BetaHuhn/do-spaces-action@v2
         with:
@@ -405,7 +406,7 @@ jobs:
             android-editor-arm32-${{ github.event.client_payload.type || 'nightly' }}
             android-editor-arm64-${{ github.event.client_payload.type || 'nightly' }}
           input_dir: ${{ github.workspace }}/downloads
-          output_dir: ${{ github.workspace }}/bin
+          output_dir: ${{ github.workspace }}/platform/android/java/lib/libs/tools/debug/
           without_folder: true
 
       - name: Save Godot build cache
@@ -441,6 +442,7 @@ jobs:
 
       - name: Create tar.gz Archive
         run: |
+          ls -la ${{ github.workspace }}/platform/android/java/lib/libs/tools/debug/
           tar -czvf ${{ matrix.cache-name }}-${{ github.event.client_payload.type || 'nightly' }}.tar.gz -C ./bin/android_editor_builds/ .
 
       - uses: BetaHuhn/do-spaces-action@v2
