@@ -98,11 +98,11 @@ jobs:
           echo "Proceed Output: ${{ steps.evaluate.outputs.proceed }}"
   web-deploy:
     name: Deploying Web Editor to ${{ github.event.client_payload.type || 'nightly' }}
+    needs: do-we-deploy-lol
     if: >
       needs.do-we-deploy-lol.outputs.proceed == 'true' ||
       needs.do-we-deploy-lol.outputs.proceed == true
     runs-on: ubuntu-latest
-    needs: build-editors
     env:
       APP_NAME_BASE: "blazium_web-editor"  # Define a global base app name
       CDN_URL: "https://cdn.blazium.app/"
