@@ -106,6 +106,7 @@ jobs:
     env:
       APP_NAME_BASE: "blazium_web-editor"  # Define a global base app name
       CDN_URL: "https://cdn.blazium.app/"
+      DEPLOY_TYPE: web-editor
     steps:
       - name: Checkout
         uses: actions/checkout@v4
