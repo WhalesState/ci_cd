@@ -498,7 +498,7 @@ jobs:
           cache-name: ${{ matrix.cache-name }}
         continue-on-error: true
 
-      - name: Prepare Editor
+      - name: Prepare Templates
         run: |
           ls -la ./bin/
           MONO_SUFFIX=""
@@ -517,7 +517,7 @@ jobs:
           chmod +x bin/blazium.*
           ls -la ./bin/
 
-      - name: Package Editor
+      - name: Package Templates
         run: |
           MONO_SUFFIX=""
           MONO_FSUFFIX=""
@@ -529,16 +529,16 @@ jobs:
           fi
 
           # Copy macOS application template and binary
-          cp -r misc/dist/macos_tools.app ./Blazium${MONO_SUFFIX}.app
-          mkdir -p Blazium${MONO_SUFFIX}.app/Contents/{MacOS,Resources}
-          cp bin/blazium.macos.template_release.universal${MONO_FSUFFIX} Blazium${MONO_SUFFIX}.app/Contents/MacOS
-          cp bin/blazium.macos.template_debug.universal${MONO_FSUFFIX} Blazium${MONO_SUFFIX}.app/Contents/MacOS
+          cp -r misc/dist/macos_template.app ./macos_template.app
+          mkdir -p macos_template.app/Contents/{MacOS,Resources}
+          cp bin/blazium.macos.template_release.universal${MONO_FSUFFIX} macos_template.app/Contents/MacOS/blazium_macos_release.universal
+          cp bin/blazium.macos.template_debug.universal${MONO_FSUFFIX} macos_template.app/Contents/MacOS/blazium_macos_debug.universal
 
           # Set permissions and sign the application
-          chmod +x Blazium${MONO_SUFFIX}.app/Contents/MacOS/blazium*
+          chmod +x macos_template.app/Contents/MacOS/blazium*
 
           # Package the application into a zip file
-          zip -q -9 -r "${{ matrix.cache-name }}-${{ github.event.client_payload.type || 'nightly' }}.zip" Blazium${MONO_SUFFIX}.app
+          zip -q -9 -r "${{ matrix.cache-name }}-${{ github.event.client_payload.type || 'nightly' }}.zip" macos_template.app
           
       
       - name: Create tar.gz Archive
