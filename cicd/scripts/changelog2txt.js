@@ -63,9 +63,12 @@ Contributors:
         });
 
         // Export the text file
-        const outputFilePath = path.join(__dirname, `changelog_${baseBranch}_to_${currentBranch}.txt`);
-        fs.writeFileSync(outputFilePath, changelogText, 'utf-8');
-        console.log(`Changelog exported to ${outputFilePath}`);
+        const outputFilePathDetailed = path.join(__dirname, `changelog_${baseBranch}_to_${currentBranch}.txt`);
+        const outputFilePathBase = path.join(__dirname, `changelog.txt`);
+        fs.writeFileSync(outputFilePathDetailed, changelogText, 'utf-8');
+        fs.writeFileSync(outputFilePathBase, changelogText, 'utf-8');
+        console.log(`Changelog exported with detailed name to ${outputFilePathDetailed}`);
+        console.log(`Changelog exported with base name to ${outputFilePathBase}`);
     } catch (error) {
         console.error(`Error processing the JSON file: ${error.message}`);
     }
