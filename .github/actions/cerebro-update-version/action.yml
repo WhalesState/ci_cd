@@ -1,0 +1,52 @@
+name: Blazium Cerebro Update Version
+
+description: Update Version Information
+
+inputs:
+  version:
+    description: The version number.
+    required: true
+  changelog_url:
+    description: URL to the changelog.
+    required: true
+  deploy_type:
+    description: Type of deployment (e.g., nightly, stable).
+    required: true
+  templates_url:
+    description: URL to the templates.
+    required: true
+  version_url:
+    description: URL of the version.
+    required: true
+  cerebro_url:
+    description: The full URL to send the update.
+    required: true
+  cerebro_auth:
+    description: Auth Key to Cerebro for Blazium.
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Send Cerebro Update Version Command
+      shell: bash
+      run: |
+        RESPONSE=$(curl -X POST "${{ inputs.cerebro_url }}/api/v1/versions" \
+          -H "Content-Type: application/json" \
+          -H "BLAZIUM_AUTH: ${{ inputs.cerebro_auth }}" \
+          -d '{
+                "version": "${{ inputs.version }}",
+                "changelog_url": "${{ inputs.changelog_url }}",
+                "deploy_type": "${{ inputs.deploy_type }}",
+                "templates_url": "${{ inputs.templates_url }}",
+                "version_url": "${{ inputs.version_url }}"
+              }')
+
+        echo "## Update Version Information (Triggered)" >> $GITHUB_STEP_SUMMARY
+        # Parse the response and check for success: true
+        if [[ $(echo "$RESPONSE" | jq -r '.success') != "true" ]]; then
+          echo "Error: Update failed, 'success' is not true in the response." >> $GITHUB_STEP_SUMMARY
+          exit 1
+        else
+          echo "Update succeeded." >> $GITHUB_STEP_SUMMARY
+        fi

@@ -61,6 +61,70 @@ concurrency:
 
 jobs:
 
+  changelog-deploy:
+    name: Changelog Generation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          repository: blazium-engine/blazium
+          ref: ${{ github.event.client_payload.branch || env.GODOT_BASE_BRANCH }}
+          fetch-depth: 2
+
+      - name: Pull .github folder from ci_cd repository
+        run: |
+          git clone --depth=1 https://github.com/blazium-engine/ci_cd.git ci_cd_repo
+          cp -r ci_cd_repo/.github/* .github/
+          mv ci_cd_repo/cicd ./
+          rm -rf ci_cd_repo
+
+      - name: Get Latest Commit SHA
+        id: get_sha
+        run: echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Parse version.py
+        id: version
+        uses: ./.github/actions/get-repos-version
+        with:
+          file_path: version.py
+
+      - name: Generate Changelog.json
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_OWNER: blazium-engine
+          GITHUB_REPO: blazium
+          BASE_BRANCH: ${{ steps.version.outputs.external_sha }}
+          CURRENT_BRANCH: ${{ steps.get_sha.outputs.sha }}
+          MAJOR_VERSION: ${{ steps.version.outputs.external_major }}
+          MINOR_VERSION: ${{ steps.version.outputs.external_minor }}
+          PATCH_VERSION: ${{ steps.version.outputs.external_patch }}
+        run: |
+          node ./cicd/scripts/changelog.js $(pwd)
+
+      - name: Generate changelog.txt
+        id: changelog
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_OWNER: blazium-engine
+          GITHUB_REPO: blazium
+          BASE_BRANCH: ${{ steps.version.outputs.external_sha }}
+          CURRENT_BRANCH: ${{ steps.get_sha.outputs.sha }}
+          MAJOR_VERSION: ${{ steps.version.outputs.external_major }}
+          MINOR_VERSION: ${{ steps.version.outputs.external_minor }}
+          PATCH_VERSION: ${{ steps.version.outputs.external_patch }}
+        run: |
+          node ./cicd/scripts/changelog2txt.js ${{ github.workspace }}/changelog.json
+
+      - uses: BetaHuhn/do-spaces-action@v2
+        with:
+          access_key: ${{ secrets.DO_ACCESS_KEY }}
+          secret_key: ${{ secrets.DO_SECRET_KEY }}
+          space_name: ${{ secrets.DO_SPACE_NAME }}
+          space_region: ${{ secrets.DO_SPACE_REGION }}
+          source: changelog.txt
+          out_dir: ${{ github.event.client_payload.type || 'nightly' }}/${{ inputs.new_version }}
+
   template-deploy:
     name: 📊 Template Deploy
     if: contains(github.event.client_payload.deploy, 'templates')
@@ -92,3 +156,21 @@ jobs:
       macos-build: ${{ inputs.macos-build }}
       linux-build: ${{ inputs.linux-build }}
       android-build: ${{ inputs.android-build }}
+
+  update-version:
+    name: Update Version Publically
+    needs: [editor-deploy, template-deploy, changelog-deploy]
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Update Cerebro of new Version
+        id: new_version
+        uses: ./.github/actions/cerebro-update-version
+        with:
+          version: ${{ inputs.new_version }}
+          changelog_url: ${{ secrets.CDN_URL }}/${{ github.event.client_payload.type || 'nightly' }}/${{ inputs.new_version }}/changelog.txt
+          deploy_type: ${{ github.event.client_payload.type || 'nightly' }}
+          templates_url: ${{ secrets.CDN_URL }}/${{ github.event.client_payload.type || 'nightly' }}/${{ inputs.new_version }}/details.json
+          version_url: ${{ secrets.CDN_URL }}/${{ github.event.client_payload.type || 'nightly' }}/${{ inputs.new_version }}/editors.json
+          cerebro_url: ${{ secrets.CEREBRO_URL }}
+          cerebro_auth: ${{ secrets.BLAZIUM_AUTH }}
