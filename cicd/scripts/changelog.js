@@ -106,7 +106,7 @@ async function generateChangelog(baseBranch, currentBranch, outputDir = __dirnam
             continue;
         }
         const commitDate = new Date(commit.commit.committer.date);
-        const commitUser = commit.committer.login; // The username of the person who made the commit
+        const commitUser = commit.commit.author.name; // The username of the person who made the commit
         const prNumber = extractPRNumberFromCommitMessage(commitMessage);
         const semVerLabel = getSemVerLabel(commitMessage);
 
