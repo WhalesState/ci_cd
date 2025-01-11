@@ -304,13 +304,13 @@ jobs:
             ${{ env.BASE_NAME }}_linux.mono.x86_32
             ${{ env.BASE_NAME }}_linux.x86_32
             ${{ env.BASE_NAME }}_windows.mono.64bit.exe
-            ${{ env.BASE_NAME }}_windows_console.mono.64bit.exe
+            ${{ env.BASE_NAME }}_windows.mono.64bit.console.exe
             ${{ env.BASE_NAME }}_windows.64bit.exe
-            ${{ env.BASE_NAME }}_windows_console.64bit.exe
+            ${{ env.BASE_NAME }}_windows.64bit.console.exe
             ${{ env.BASE_NAME }}_windows.mono.32bit.exe
-            ${{ env.BASE_NAME }}_windows_console.mono.32bit.exe
+            ${{ env.BASE_NAME }}_windows.mono.32bit.console.exe
             ${{ env.BASE_NAME }}_windows.32bit.exe
-            ${{ env.BASE_NAME }}_windows_console.32bit.exe
+            ${{ env.BASE_NAME }}_windows.32bit.console.exe
             ${{ env.BASE_NAME }}_web.wasm32.zip
             ${{ env.BASE_NAME }}_macos.universal.zip
             ${{ env.BASE_NAME }}_macos.universal.mono.zip
@@ -319,13 +319,13 @@ jobs:
             ${{ env.BASE_NAME }}_android.meta.aab
             ${{ env.BASE_NAME }}_android.meta.apk
             ${{ env.BASE_NAME }}_windows.arm64.exe
-            ${{ env.BASE_NAME }}_windows_console.arm64.exe
+            ${{ env.BASE_NAME }}_windows.arm64.console.exe
             ${{ env.BASE_NAME }}_windows.mono.arm64.exe
-            ${{ env.BASE_NAME }}_windows_console.mono.arm64.exe
+            ${{ env.BASE_NAME }}_windows.mono.arm64.console.exe
             ${{ env.BASE_NAME }}_windows.arm32.exe
-            ${{ env.BASE_NAME }}_windows_console.arm32.exe
+            ${{ env.BASE_NAME }}_windows.arm32.console.exe
             ${{ env.BASE_NAME }}_windows.mono.arm32.exe
-            ${{ env.BASE_NAME }}_windows_console.mono.arm32.exe
+            ${{ env.BASE_NAME }}_windows.mono.arm32.console.exe
             ${{ env.BASE_NAME }}_linux.arm64
             ${{ env.BASE_NAME }}_linux.mono.arm64
             ${{ env.BASE_NAME }}_linux.arm32
