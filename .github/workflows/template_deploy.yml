@@ -658,7 +658,7 @@ jobs:
           TARGET_DIR="${GITHUB_WORKSPACE}/export"
           BASE_FILE="${TARGET_DIR}/${BASE_NAME}_export_templates.tpz"
           MONO_FILE="${TARGET_DIR}/${BASE_NAME}_mono_export_templates.tpz"
-          OUTPUT_FILE="${TARGET_DIR}/details.json"
+          OUTPUT_FILE="${TARGET_DIR}/templates.json"
 
           # Ensure files exist
           if [ ! -f "$BASE_FILE" ]; then
