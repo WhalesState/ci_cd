@@ -656,7 +656,7 @@ jobs:
         id: template-upload
         uses: actions/upload-release-asset@v1.0.1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PRIVATE_GITHUB_PAT }}
         with:
           upload_url: ${{ inputs.release_url }}
           asset_path: ${{ github.workspace }}/export/${{ env.BASE_NAME }}_export_templates.tpz
@@ -667,7 +667,7 @@ jobs:
         id: mono-template-upload
         uses: actions/upload-release-asset@v1.0.1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PRIVATE_GITHUB_PAT }}
         with:
           upload_url: ${{ inputs.release_url }}
           asset_path: ${{ github.workspace }}/export/${{ env.BASE_NAME }}_mono_export_templates.tpz

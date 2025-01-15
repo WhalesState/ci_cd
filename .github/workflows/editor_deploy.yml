@@ -544,7 +544,7 @@ jobs:
       - name: Upload assets to GitHub release
         uses: ./.github/actions/upload-github-release
         with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PRIVATE_GITHUB_PAT }}
           UPLOAD_URL: ${{ inputs.release_url }}
           FILES: |
             ${{ github.workspace }}/editors/${{ env.BASE_NAME }}_linux.x86_64.zip

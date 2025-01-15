@@ -131,7 +131,7 @@ jobs:
         id: createRelease
         uses: ./.github/actions/create-github-release
         with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PRIVATE_GITHUB_PAT }}
           OWNER: blazium-engine
           REPO: blazium
           TARGET_COMMIT: ${{ inputs.build_sha }}
