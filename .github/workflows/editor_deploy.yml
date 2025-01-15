@@ -34,6 +34,11 @@ on:
         description: "Build Status for Android"
         required: true
         type: string
+      release_url:
+        description: "Release URL to upload files to the Release URL"
+        required: true
+        type: string
+
 # Global Settings
 env:
   # Used for the cache key. Add version suffix to force clean build.
@@ -535,3 +540,32 @@ jobs:
           access_key: ${{ secrets.DO_ACCESS_KEY }}
           secret_key: ${{ secrets.DO_SECRET_KEY }}
           space_path: ${{ github.event.client_payload.type || 'nightly' }}/${{ inputs.new_version }}
+
+      - name: Upload assets to GitHub release
+        uses: ./.github/actions/upload-github-release
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          UPLOAD_URL: ${{ inputs.release_url }}
+          FILES: |
+            ${{ github.workspace }}/editors/${{ env.BASE_NAME }}_linux.x86_64.zip
+            ${{ github.workspace }}/editors/${{ env.BASE_NAME }}_linux.mono.x86_64.zip
+            ${{ github.workspace }}/editors/${{ env.BASE_NAME }}_linux.mono.x86_32.zip
+            ${{ github.workspace }}/editors/${{ env.BASE_NAME }}_linux.x86_32.zip
+            ${{ github.workspace }}/editors/${{ env.BASE_NAME }}_windows.mono.64bit.zip
+            ${{ github.workspace }}/editors/${{ env.BASE_NAME }}_windows.64bit.zip
+            ${{ github.workspace }}/editors/${{ env.BASE_NAME }}_windows.mono.32bit.zip
+            ${{ github.workspace }}/editors/${{ env.BASE_NAME }}_windows.32bit.zip
+            ${{ github.workspace }}/editors/${{ env.BASE_NAME }}_web.zip
+            ${{ github.workspace }}/editors/${{ env.BASE_NAME }}_macos.zip
+            ${{ github.workspace }}/editors/${{ env.BASE_NAME }}_macos.mono.zip
+            ${{ github.workspace }}/editors/${{ env.BASE_NAME }}_android.zip
+            ${{ github.workspace }}/editors/${{ env.BASE_NAME }}_android.meta.zip
+            ${{ github.workspace }}/editors/${{ env.BASE_NAME }}_windows.arm64.zip
+            ${{ github.workspace }}/editors/${{ env.BASE_NAME }}_windows.mono.arm64.zip
+            ${{ github.workspace }}/editors/${{ env.BASE_NAME }}_windows.arm32.zip
+            ${{ github.workspace }}/editors/${{ env.BASE_NAME }}_windows.mono.arm32.zip
+            ${{ github.workspace }}/editors/${{ env.BASE_NAME }}_linux.arm64.zip
+            ${{ github.workspace }}/editors/${{ env.BASE_NAME }}_linux.mono.arm64.zip
+            ${{ github.workspace }}/editors/${{ env.BASE_NAME }}_linux.arm32.zip
+            ${{ github.workspace }}/editors/${{ env.BASE_NAME }}_linux.mono.arm32.zip
+          DEBUG: "true"

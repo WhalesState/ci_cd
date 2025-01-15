@@ -1,0 +1,133 @@
+name: 'Create GitHub Release'
+
+description: 'GitHub Action to create a release with optional debug and summary outputs.'
+
+inputs:
+  GITHUB_TOKEN:
+    description: 'GitHub token for authentication'
+    required: true
+  OWNER:
+    description: 'Repository owner'
+    required: true
+  REPO:
+    description: 'Repository name'
+    required: true
+  TARGET_COMMIT:
+    description: 'Target Commit for Release'
+    required: false
+    default: "master"
+  TAG_NAME:
+    description: 'Tag name for the release'
+    required: true
+  NAME:
+    description: 'Name of the release'
+    required: true
+  BODY:
+    description: 'Body of the release (multiline YAML)'
+    required: false
+    default: ''
+  BODY_FILE:
+    description: 'Path to a text file containing the release body'
+    required: false
+  DRAFT:
+    description: 'Whether the release is a draft'
+    required: false
+    default: "false"
+  PRERELEASE:
+    description: 'Whether the release is a prerelease'
+    required: false
+    default: "false"
+  GENERATE_RELEASE_NOTES:
+    description: 'Generate release notes if body is empty and no body file is provided'
+    required: false
+    default: "false"
+  DEBUG:
+    description: 'Enable debug output'
+    required: false
+    default: "false"
+
+outputs:
+  upload_url:
+    description: 'The upload URL of the created release'
+    value: ${{ steps.create_release.outputs.upload_url }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up release body
+      id: setup_body
+      shell: bash
+      env:
+        BODY: ${{ inputs.BODY }}
+        BODY_FILE: ${{ inputs.BODY_FILE }}
+        GENERATE_RELEASE_NOTES: ${{ inputs.GENERATE_RELEASE_NOTES }}
+      run: |
+        if [[ -n "$BODY_FILE" ]]; then
+          if [[ ! -f "$BODY_FILE" ]]; then
+            echo "::error::The file specified in BODY_FILE does not exist."
+            exit 1
+          fi
+          BODY_CONTENT=$(cat "$BODY_FILE")
+        elif [[ -n "$BODY" ]]; then
+          BODY_CONTENT="$BODY"
+        elif [[ "$GENERATE_RELEASE_NOTES" == "true" ]]; then
+          BODY_CONTENT=""
+        else
+          echo "::error::Release body or file must be provided unless generate_release_notes is true."
+          exit 1
+        fi
+        echo "body=$BODY_CONTENT" >> $GITHUB_OUTPUT
+
+    - name: Create GitHub release
+      id: create_release
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.GITHUB_TOKEN }}
+        OWNER: ${{ inputs.OWNER }}
+        REPO: ${{ inputs.REPO }}
+        TAG_NAME: ${{ inputs.TAG_NAME }}
+        NAME: ${{ inputs.NAME }}
+        BODY: ${{ steps.setup_body.outputs.body }}
+        TARGET: ${{ inputs.TARGET_COMMIT }}
+        DRAFT: ${{ inputs.DRAFT }}
+        PRERELEASE: ${{ inputs.PRERELEASE }}
+        GENERATE_RELEASE_NOTES: ${{ inputs.GENERATE_RELEASE_NOTES }}
+      run: |
+        RESPONSE=$(curl -L \
+          -X POST \
+          -H "Accept: application/vnd.github+json" \
+          -H "Authorization: Bearer $GITHUB_TOKEN" \
+          -H "X-GitHub-Api-Version: 2022-11-28" \
+          https://api.github.com/repos/$OWNER/$REPO/releases \
+          -d "$(jq -n \
+              --arg tag_name "$TAG_NAME" \
+              --arg name "$NAME" \
+              --arg body "$BODY" \
+              --arg target "$TARGET" \
+              --argjson draft "$DRAFT" \
+              --argjson prerelease "$PRERELEASE" \
+              --argjson generate_release_notes "$GENERATE_RELEASE_NOTES" \
+              '{tag_name: $tag_name, target_commitish: $target, name: $name, body: $body, draft: $draft, prerelease: $prerelease, generate_release_notes: $generate_release_notes}')")
+
+        UPLOAD_URL=$(echo "$RESPONSE" | jq -r '.upload_url')
+
+        if [[ -z "$UPLOAD_URL" || "$UPLOAD_URL" == "null" ]]; then
+          echo "::error::Failed to retrieve upload_url from the release response."
+          echo "Error: 'upload_url' is missing in the response." >> $GITHUB_STEP_SUMMARY
+          echo "Response payload:" >> $GITHUB_STEP_SUMMARY
+          echo "$RESPONSE" >> $GITHUB_STEP_SUMMARY
+          exit 1
+        fi
+
+        echo "upload_url=$UPLOAD_URL" >> $GITHUB_OUTPUT
+
+        echo "Debug: Release created successfully." >> $GITHUB_STEP_SUMMARY
+        if [[ "$INPUT_DEBUG" == "true" ]]; then
+          echo "Debug: Full response payload:" >> $GITHUB_STEP_SUMMARY
+          echo "$RESPONSE" >> $GITHUB_STEP_SUMMARY
+        fi
+
+    - name: Output upload URL
+      shell: bash
+      run: |
+        echo "The upload URL is: ${{ steps.create_release.outputs.upload_url }}"

@@ -648,11 +648,35 @@ jobs:
         with:
           directory: ${{ github.workspace }}/export
 
+      - name: Upload Template Release Asset
+        id: template-upload
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ inputs.release_url }}
+          asset_path: ${{ github.workspace }}/export/${{ env.BASE_NAME }}_export_templates.tpz
+          asset_name: ${{ env.BASE_NAME }}_export_templates.tpz
+          asset_content_type: application/zip
+
+      - name: Upload Mono Template Release Asset
+        id: mono-template-upload
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ inputs.release_url }}
+          asset_path: ${{ github.workspace }}/export/${{ env.BASE_NAME }}_mono_export_templates.tpz
+          asset_name: ${{ env.BASE_NAME }}_mono_export_templates.tpz
+          asset_content_type: application/zip
+
       - name: Generate JSON with File Info and Checksums
         shell: bash
         env:
           BASE_NAME: ${{ env.BASE_NAME }}
           URL_BASE: ${{ secrets.CDN_URL }}/${{ github.event.client_payload.type || 'nightly' }}/${{ inputs.new_version }}
+          MONO_GITHUB_TEMPLATE: ${{ steps.mono-template-upload.outputs.browser_download_url }}
+          GITHUB_TEMPLATE: ${{ steps.template-upload.outputs.browser_download_url }}
         run: |
           # Define file paths and output file
           TARGET_DIR="${GITHUB_WORKSPACE}/export"
@@ -691,12 +715,14 @@ jobs:
             --arg base_256_checksum "$BASE_256_CHECKSUM" \
             --arg base_512_checksum "$BASE_512_CHECKSUM" \
             --arg base_url "${URL_BASE}/$(basename "$BASE_FILE")" \
+            --arg base_github_url "${GITHUB_TEMPLATE}" \
             --arg base_timestamp "$BASE_TIMESTAMP" \
             --arg base_filesize "$BASE_FILE_SIZE" \
             --arg mono_filename "$(basename "$MONO_FILE")" \
             --arg mono_256_checksum "$MONO_256_CHECKSUM" \
             --arg mono_512_checksum "$MONO_512_CHECKSUM" \
             --arg mono_url "${URL_BASE}/$(basename "$MONO_FILE")" \
+            --arg mono_github_url "${MONO_GITHUB_TEMPLATE}" \
             --arg mono_timestamp "$MONO_TIMESTAMP" \
             --arg mono_filesize "$MONO_FILE_SIZE" \
             '{
@@ -709,7 +735,18 @@ jobs:
                   "256": $base_256_checksum
                 },
                 url: $base_url,
-                timestamp: $base_timestamp
+                timestamp: $base_timestamp,
+                mirrors: [{
+                  name: "Github Blazium Templates Mirror",
+                  filename: $base_filename,
+                  filesize: $base_filesize,
+                  checksum: {
+                    "512": $base_512_checksum,
+                    "256": $base_256_checksum
+                  },
+                  url: $base_github_url,
+                  timestamp: $base_timestamp
+                }]
               },
               mono: {
                 name: "Official Blazium Mono Templates Mirror",
@@ -720,7 +757,18 @@ jobs:
                   "256": $base_256_checksum
                 },
                 url: $mono_url,
-                timestamp: $mono_timestamp
+                timestamp: $mono_timestamp,
+                mirrors:[{
+                  name: "Github Blazium Mono Templates Mirror",
+                  filename: $mono_filename,
+                  filesize: $mono_filesize,
+                  checksum: {
+                    "512": $mono_512_checksum,
+                    "256": $base_256_checksum
+                  },
+                  url: $mono_github_url,
+                  timestamp: $mono_timestamp
+                }]
               }
             }' > "$OUTPUT_FILE"
 

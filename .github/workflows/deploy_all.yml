@@ -64,6 +64,8 @@ jobs:
   changelog-deploy:
     name: Changelog Generation
     runs-on: ubuntu-latest
+    outputs:
+      release_url: ${{ steps.createRelease.outputs.upload_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -125,9 +127,25 @@ jobs:
           source: cicd/scripts/changelog.txt
           out_dir: ${{ github.event.client_payload.type || 'nightly' }}/${{ inputs.new_version }}
 
+      - name: Create GitHub Release
+        id: createRelease
+        uses: ./.github/actions/create-github-release
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OWNER: blazium-engine
+          REPO: blazium
+          TARGET_COMMIT: ${{ steps.get_sha.outputs.sha }}
+          TAG_NAME: v${{ inputs.new_version }}
+          NAME: /[${{ github.event.client_payload.type || 'nightly' }}/] Blazium Engine v${{ inputs.new_version }}
+          BODY_FILE: ${{ github.workspace }}/cicd/scripts/changelog.txt
+          DRAFT: ${{ github.event.client_payload.type == 'nightly' }}
+          PRERELEASE: ${{ github.event.client_payload.type == 'nightly' || github.event.client_payload.type == 'prerelease' }}
+          DEBUG: true
+
   template-deploy:
     name: 📊 Template Deploy
     if: contains(github.event.client_payload.deploy, 'templates')
+    needs: [changelog-deploy]
     uses: ./.github/workflows/template_deploy.yml
     secrets: inherit
     with:
@@ -140,11 +158,13 @@ jobs:
       linux-build: ${{ inputs.linux-build }}
       android-build: ${{ inputs.android-build }}
       ios-build: ${{ inputs.ios-build }}
+      release_url: ${{ needs.changelog-deploy.outputs.release_url }}
 
 
   editor-deploy:
     name: 📊 Editor Deploy
     if: contains(github.event.client_payload.deploy, 'editors')
+    needs: [changelog-deploy]
     uses: ./.github/workflows/editor_deploy.yml
     secrets: inherit
     with:
@@ -156,6 +176,7 @@ jobs:
       macos-build: ${{ inputs.macos-build }}
       linux-build: ${{ inputs.linux-build }}
       android-build: ${{ inputs.android-build }}
+      release_url: ${{ needs.changelog-deploy.outputs.release_url }}
 
   update-version:
     name: Update Version Publically
