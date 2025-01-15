@@ -134,7 +134,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OWNER: blazium-engine
           REPO: blazium
-          TARGET_COMMIT: ${{ steps.get_sha.outputs.sha }}
+          TARGET_COMMIT: ${{ inputs.build_sha }}
           TAG_NAME: v${{ inputs.new_version }}
           NAME: /[${{ github.event.client_payload.type || 'nightly' }}/] Blazium Engine v${{ inputs.new_version }}
           BODY_FILE: ${{ github.workspace }}/cicd/scripts/changelog.txt
