@@ -67,9 +67,11 @@ runs:
             echo "::error::The file specified in BODY_FILE does not exist."
             exit 1
           fi
-          BODY_CONTENT=$(cat "$BODY_FILE" | jq -Rsa .)
+          # BODY_CONTENT=$(cat "$BODY_FILE" | sed ':a;N;$!ba;s/\n/\r\n/g' | jq -Rsa .)
+          BODY_CONTENT=$(cat "$BODY_FILE" | sed ':a;N;$!ba;s/\n/<br \/>/g' | jq -Rsa .)
         elif [[ -n "$BODY" ]]; then
-          BODY_CONTENT="$BODY"
+          # BODY_CONTENT=$(echo "$BODY" | sed ':a;N;$!ba;s/\n/\r\n/g' | jq -Rsa .)
+          BODY_CONTENT=$(echo "$BODY" | sed ':a;N;$!ba;s/\n/<br \/>/g' | jq -Rsa .)
         elif [[ "$GENERATE_RELEASE_NOTES" == "true" ]]; then
           BODY_CONTENT=""
         else

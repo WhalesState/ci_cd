@@ -136,7 +136,7 @@ jobs:
           REPO: blazium
           TARGET_COMMIT: ${{ inputs.build_sha }}
           TAG_NAME: v${{ inputs.new_version }}
-          NAME: /[${{ github.event.client_payload.type || 'nightly' }}/] Blazium Engine v${{ inputs.new_version }}
+          NAME: "[${{ github.event.client_payload.type || 'nightly' }}] Blazium Engine v${{ inputs.new_version }}"
           BODY_FILE: ${{ github.workspace }}/cicd/scripts/changelog.txt
           DRAFT: ${{ github.event.client_payload.type == 'nightly' }}
           PRERELEASE: ${{ github.event.client_payload.type == 'nightly' || github.event.client_payload.type == 'prerelease' }}
