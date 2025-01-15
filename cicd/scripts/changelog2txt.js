@@ -24,7 +24,7 @@ function generateChangelogText(jsonFilePath) {
 
         // Template: Header Section
         let changelogText = `
-Changelog: ${baseBranch} → ${currentBranch}
+Changelog: ${baseBranch} -> ${currentBranch}
 
 Summary:
 - Version: ${version["major"]}.${version["minor"]}.${version["patch"]}

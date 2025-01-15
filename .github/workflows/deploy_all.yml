@@ -135,7 +135,7 @@ jobs:
           OWNER: blazium-engine
           REPO: blazium
           TARGET_COMMIT: ${{ inputs.build_sha }}
-          TAG_NAME: v${{ inputs.new_version }}
+          TAG_NAME: v${{ inputs.new_version }}${{ github.event.client_payload.type != 'release' && format('-{0}', github.event.client_payload.type || 'nightly') || '' }} 
           NAME: "[${{ github.event.client_payload.type || 'nightly' }}] Blazium Engine v${{ inputs.new_version }}"
           BODY_FILE: ${{ github.workspace }}/cicd/scripts/changelog.txt
           DRAFT: ${{ github.event.client_payload.type == 'nightly' }}
