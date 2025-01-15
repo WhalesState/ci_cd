@@ -670,6 +670,24 @@ jobs:
           asset_name: ${{ env.BASE_NAME }}_mono_export_templates.tpz
           asset_content_type: application/zip
 
+      - uses: BetaHuhn/do-spaces-action@v2
+        with:
+          access_key: ${{ secrets.DO_ACCESS_KEY }}
+          secret_key: ${{ secrets.DO_SECRET_KEY }}
+          space_name: ${{ secrets.DO_SPACE_NAME }}
+          space_region: ${{ secrets.DO_SPACE_REGION }}
+          source: export/${{ env.BASE_NAME }}_export_templates.tpz
+          out_dir: ${{ github.event.client_payload.type || 'nightly' }}/${{ inputs.new_version }}
+
+      - uses: BetaHuhn/do-spaces-action@v2
+        with:
+          access_key: ${{ secrets.DO_ACCESS_KEY }}
+          secret_key: ${{ secrets.DO_SECRET_KEY }}
+          space_name: ${{ secrets.DO_SPACE_NAME }}
+          space_region: ${{ secrets.DO_SPACE_REGION }}
+          source: export/${{ env.BASE_NAME }}_mono_export_templates.tpz
+          out_dir: ${{ github.event.client_payload.type || 'nightly' }}/${{ inputs.new_version }}
+
       - name: Generate JSON with File Info and Checksums
         shell: bash
         env:
@@ -776,25 +794,6 @@ jobs:
           echo "Generated JSON file: $OUTPUT_FILE" >> $GITHUB_STEP_SUMMARY
           echo "Contents:" >> $GITHUB_STEP_SUMMARY
           cat "$OUTPUT_FILE" >> $GITHUB_STEP_SUMMARY
-
-
-      - uses: BetaHuhn/do-spaces-action@v2
-        with:
-          access_key: ${{ secrets.DO_ACCESS_KEY }}
-          secret_key: ${{ secrets.DO_SECRET_KEY }}
-          space_name: ${{ secrets.DO_SPACE_NAME }}
-          space_region: ${{ secrets.DO_SPACE_REGION }}
-          source: export/${{ env.BASE_NAME }}_export_templates.tpz
-          out_dir: ${{ github.event.client_payload.type || 'nightly' }}/${{ inputs.new_version }}
-
-      - uses: BetaHuhn/do-spaces-action@v2
-        with:
-          access_key: ${{ secrets.DO_ACCESS_KEY }}
-          secret_key: ${{ secrets.DO_SECRET_KEY }}
-          space_name: ${{ secrets.DO_SPACE_NAME }}
-          space_region: ${{ secrets.DO_SPACE_REGION }}
-          source: export/${{ env.BASE_NAME }}_mono_export_templates.tpz
-          out_dir: ${{ github.event.client_payload.type || 'nightly' }}/${{ inputs.new_version }}
 
       - uses: BetaHuhn/do-spaces-action@v2
         with:
