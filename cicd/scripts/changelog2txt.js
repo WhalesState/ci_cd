@@ -59,7 +59,7 @@ Contributors:
 `;
 
         uniqueContributors.forEach((contributor) => {
-            changelogText += `- ${contributor.username}: ${contributor.contributions} contributions\n`;
+            changelogText += `- ${contributor.username}: ${contributor.contributions} contributions\r\n`;
         });
 
         // Export the text file
