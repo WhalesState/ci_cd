@@ -38,6 +38,10 @@ on:
         description: "Build Status for iOS"
         required: true
         type: string
+      release_url:
+        description: "Release URL to upload files to the Release URL"
+        required: true
+        type: string
 
 # Global Settings
 env:
