@@ -118,6 +118,20 @@ jobs:
         run: |
           node ./cicd/scripts/changelog2txt.js ${{ github.workspace }}/changelog.json
 
+      - name: Generate changelog.html
+        id: changelog
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_OWNER: blazium-engine
+          GITHUB_REPO: blazium
+          BASE_BRANCH: ${{ steps.version.outputs.external_sha }}
+          CURRENT_BRANCH: ${{ steps.get_sha.outputs.sha }}
+          MAJOR_VERSION: ${{ steps.version.outputs.external_major }}
+          MINOR_VERSION: ${{ steps.version.outputs.external_minor }}
+          PATCH_VERSION: ${{ steps.version.outputs.external_patch }}
+        run: |
+          node ./cicd/scripts/changelog2html.js ${{ github.workspace }}/changelog.json
+
       - uses: BetaHuhn/do-spaces-action@v2
         with:
           access_key: ${{ secrets.DO_ACCESS_KEY }}
@@ -137,7 +151,7 @@ jobs:
           TARGET_COMMIT: ${{ inputs.build_sha }}
           TAG_NAME: v${{ inputs.new_version }}${{ github.event.client_payload.type != 'release' && format('-{0}', github.event.client_payload.type || 'nightly') || '' }} 
           NAME: "[${{ github.event.client_payload.type || 'nightly' }}] Blazium Engine v${{ inputs.new_version }}"
-          BODY_FILE: ${{ github.workspace }}/cicd/scripts/changelog.txt
+          BODY_FILE: ${{ github.workspace }}/cicd/scripts/changelog.html
           DRAFT: ${{ github.event.client_payload.type == 'nightly' }}
           PRERELEASE: ${{ github.event.client_payload.type == 'nightly' || github.event.client_payload.type == 'prerelease' }}
           DEBUG: true

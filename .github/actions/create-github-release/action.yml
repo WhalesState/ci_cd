@@ -68,7 +68,8 @@ runs:
             exit 1
           fi
           # BODY_CONTENT=$(cat "$BODY_FILE" | sed 's/\r\r/<br \/>/g' | sed ':a;N;$!ba;s/\n/\r\n/g' | jq -Rsa '.[1:-1]')
-          BODY_CONTENT=$(cat "$BODY_FILE" | sed ':a;N;$!ba;s/\n/<br \/>/g' | jq --raw-output -Rsa '.' | sed 's/^"//;s/"$//')
+          # BODY_CONTENT=$(cat "$BODY_FILE" | sed ':a;N;$!ba;s/\n/<br \/>/g' | jq --raw-output -Rsa '.' | sed 's/^"//;s/"$//')
+          BODY_CONTENT=$(cat "$BODY_FILE")
         elif [[ -n "$BODY" ]]; then
           # BODY_CONTENT=$(echo "$BODY" | sed ':a;N;$!ba;s/\n/\r\n/g' | jq -Rsa '.[1:-1]')
           BODY_CONTENT=$(echo "$BODY" | sed ':a;N;$!ba;s/\n/<br \/>/g' | jq --raw-output -Rsa '.' | sed 's/^"//;s/"$//')
