@@ -179,8 +179,8 @@ jobs:
       
   deploy:
     name: Deploy
-    needs: [monoglue-build, windows-build, macos-build, linux-build, android-build, ios-build, get-latest-sha]
-    if: ${{ always() }}
+    needs: [monoglue-build, windows-build, macos-build, linux-build, android-build, ios-build, get-latest-sha, static-checks]
+    if: always() && !failure()
     uses: ./.github/workflows/deploy_all.yml
     secrets: inherit
     with:
