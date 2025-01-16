@@ -42,32 +42,28 @@ Commits and PRs:
 
         // Template: Commits and PRs Section
         changelog.forEach((entry) => {
-            const cleanedMessage = entry.message.replace(/\r/g, "");
             if (!entry.pr) {
                 changelogText += `
     Commit SHA: ${entry.sha}
     Date: ${new Date(entry.date).toLocaleString()}
     User: ${entry.user}
-    Message: ${cleanedMessage}
-    ---
-    `;
+    Message: ${entry.message}
+    ---`;
             } 
         });
 
         // Template: Contributors Section
-        changelogText += `
-Contributors:
-`;
+        changelogText += `Contributors:\n`;
 
         uniqueContributors.forEach((contributor) => {
-            changelogText += `- ${contributor.username}: ${contributor.contributions} contributions\r\n`;
+            changelogText += `- ${contributor.username}: ${contributor.contributions} contributions\n`;
         });
-
+        const cleanedMessage = changelogText.replace(/\r/g, "");
         // Export the text file
         const outputFilePathDetailed = path.join(__dirname, `changelog_${baseBranch}_to_${currentBranch}.txt`);
         const outputFilePathBase = path.join(__dirname, `changelog.txt`);
-        fs.writeFileSync(outputFilePathDetailed, changelogText, 'utf-8');
-        fs.writeFileSync(outputFilePathBase, changelogText, 'utf-8');
+        fs.writeFileSync(outputFilePathDetailed, cleanedMessage, 'utf-8');
+        fs.writeFileSync(outputFilePathBase, cleanedMessage, 'utf-8');
         console.log(`Changelog exported with detailed name to ${outputFilePathDetailed}`);
         console.log(`Changelog exported with base name to ${outputFilePathBase}`);
     } catch (error) {
