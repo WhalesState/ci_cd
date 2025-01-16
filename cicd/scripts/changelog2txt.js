@@ -23,6 +23,7 @@ function generateChangelogText(jsonFilePath) {
         } = changelogData;
 
         // Template: Header Section
+        
         let changelogText = `
 Changelog: ${baseBranch} -> ${currentBranch}
 
@@ -42,12 +43,13 @@ Commits and PRs:
 
         // Template: Commits and PRs Section
         changelog.forEach((entry) => {
+            const cleanedMessage = entry.message.replace(/\r/g, "");
             if (!entry.pr) {
                 changelogText += `
     Commit SHA: ${entry.sha}
     Date: ${new Date(entry.date).toLocaleString()}
     User: ${entry.user}
-    Message: ${entry.message}
+    Message: ${cleanedMessage}
     ---
     `;
             } 
