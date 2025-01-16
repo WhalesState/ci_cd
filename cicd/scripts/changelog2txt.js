@@ -53,7 +53,7 @@ Commits and PRs:
         });
 
         // Template: Contributors Section
-        changelogText += `Contributors:\n`;
+        changelogText += `\nContributors:\n`;
 
         uniqueContributors.forEach((contributor) => {
             changelogText += `- ${contributor.username}: ${contributor.contributions} contributions\n`;
