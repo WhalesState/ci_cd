@@ -263,6 +263,10 @@ jobs:
           rm -f llvm-mingw-20240619-ucrt-ubuntu-20.04-x86_64.tar.xz
           cd llvm-mingw-20240619-ucrt-ubuntu-20.04-x86_64
           echo "MINGW_PREFIX=$(pwd)" >> $GITHUB_ENV
+          sudo rm -f /usr/bin/ar /usr/bin/ranlib
+          sudo ln -s llvm-ar /usr/bin/ar
+          sudo ln -s llvm-ranlib /usr/bin/ranlib
+          ar --version && ranlib --version
 
       - name: Free disk space on runner
         run: |
