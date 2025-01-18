@@ -128,7 +128,7 @@ jobs:
           - name: Editor (arm64)
             cache-name: windows-editor-arm64
             target: editor
-            sconsflags: arch=arm64 use_llvm=yes ${{ github.event.client_payload.production && 'production=yes' || '' }}
+            sconsflags: -j1 arch=arm64 use_llvm=yes ${{ github.event.client_payload.production && 'production=yes' || '' }}
             mono: false
             arm: true
             skip: false
@@ -136,7 +136,7 @@ jobs:
           - name: Editor w/ Mono (arm64)
             cache-name: windows-editor-mono-arm64
             target: editor
-            sconsflags: module_mono_enabled=yes arch=arm64 use_llvm=yes ${{ github.event.client_payload.production && 'production=yes' || '' }}
+            sconsflags: -j1 module_mono_enabled=yes arch=arm64 use_llvm=yes ${{ github.event.client_payload.production && 'production=yes' || '' }}
             mono: true
             arm: true
             skip: false
@@ -144,7 +144,7 @@ jobs:
           - name: Editor (arm32)
             cache-name: windows-editor-arm32
             target: editor
-            sconsflags: arch=arm32 use_llvm=yes ${{ github.event.client_payload.production && 'production=yes' || '' }}
+            sconsflags: -j1 arch=arm32 use_llvm=yes ${{ github.event.client_payload.production && 'production=yes' || '' }}
             mono: false
             arm: true
             skip: false
@@ -152,7 +152,7 @@ jobs:
           - name: Editor w/ Mono (arm32)
             cache-name: windows-editor-mono-arm32
             target: editor
-            sconsflags: module_mono_enabled=yes arch=arm32 use_llvm=yes ${{ github.event.client_payload.production && 'production=yes' || '' }}
+            sconsflags: -j1 module_mono_enabled=yes arch=arm32 use_llvm=yes ${{ github.event.client_payload.production && 'production=yes' || '' }}
             mono: true
             arm: true
             skip: false
@@ -529,14 +529,14 @@ jobs:
           - name: Template w/ Mono (arm32)
             cache-name: windows-debug-template-mono-arm32
             target: template_debug
-            sconsflags: module_mono_enabled=yes arch=arm32 use_llvm=yes  ${{ github.event.client_payload.production && 'production=yes' || '' }}
+            sconsflags: -j1 module_mono_enabled=yes arch=arm32 use_llvm=yes  ${{ github.event.client_payload.production && 'production=yes' || '' }}
             mono: true
             arm: true
 
           - name: Template (arm32)
             cache-name: windows-debug-template-arm32
             target: template_debug
-            sconsflags: arch=arm32 use_llvm=yes ${{ github.event.client_payload.production && 'production=yes' || '' }}
+            sconsflags: -j1 arch=arm32 use_llvm=yes ${{ github.event.client_payload.production && 'production=yes' || '' }}
             mono: false
             arm: true
 
@@ -751,7 +751,6 @@ jobs:
           sconsflags: ${{ matrix.sconsflags }} ${{ env.SCONSFLAGS }}
           platform: windows
           target: ${{ matrix.target }}
-          compiler: gcc
           mingw-prefix: ${{ matrix.mingw || '' }}
 
       - name: Save Godot build cache
