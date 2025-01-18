@@ -129,28 +129,28 @@ jobs:
           - name: Editor (arm64)
             cache-name: linux-editor-arm64
             target: editor
-            sconsflags: arch=arm64 use_llvm=yes ${{ github.event.client_payload.production && 'production=yes' || '' }}
+            sconsflags: arch=arm64 use_llvm=yes ${{ github.event.client_payload.production && 'production=yes' || '' }} lto=none
             mono: false
             arm: true
 
           - name: Editor w/ Mono (arm64)
             cache-name: linux-editor-mono-arm64
             target: editor
-            sconsflags: module_mono_enabled=yes arch=arm64 use_llvm=yes ${{ github.event.client_payload.production && 'production=yes' || '' }}
+            sconsflags: module_mono_enabled=yes arch=arm64 use_llvm=yes ${{ github.event.client_payload.production && 'production=yes' || '' }} lto=none
             mono: true
             arm: true
 
           - name: Editor (arm32)
             cache-name: linux-editor-arm32
             target: editor
-            sconsflags: arch=arm32 use_llvm=yes ${{ github.event.client_payload.production && 'production=yes' || '' }}
+            sconsflags: arch=arm32 use_llvm=yes ${{ github.event.client_payload.production && 'production=yes' || '' }} lto=none
             mono: false
             arm: true
 
           - name: Editor w/ Mono (arm32)
             cache-name: linux-editor-mono-arm32
             target: editor
-            sconsflags: module_mono_enabled=yes arch=arm32 use_llvm=yes ${{ github.event.client_payload.production && 'production=yes' || '' }}
+            sconsflags: module_mono_enabled=yes arch=arm32 use_llvm=yes ${{ github.event.client_payload.production && 'production=yes' || '' }} lto=none
             mono: true
             arm: true
 
@@ -263,10 +263,6 @@ jobs:
           rm -f llvm-mingw-20240619-ucrt-ubuntu-20.04-x86_64.tar.xz
           cd llvm-mingw-20240619-ucrt-ubuntu-20.04-x86_64
           echo "MINGW_PREFIX=$(pwd)" >> $GITHUB_ENV
-          sudo rm -f /usr/bin/ar /usr/bin/ranlib
-          sudo ln -s llvm-ar /usr/bin/ar
-          sudo ln -s llvm-ranlib /usr/bin/ranlib
-          ar --version && ranlib --version
 
       - name: Free disk space on runner
         run: |
@@ -450,7 +446,7 @@ jobs:
           - name: Release Template w/ Mono (arm64)
             cache-name: linux-template-mono-arm64
             target: template_release
-            sconsflags: module_mono_enabled=yes arch=arm64 use_llvm=yes ${{ github.event.client_payload.production && 'production=yes' || '' }}
+            sconsflags: module_mono_enabled=yes arch=arm64 use_llvm=yes ${{ github.event.client_payload.production && 'production=yes' || '' }} lto=none
             mono: true
             arm: true
             skip: true
@@ -458,7 +454,7 @@ jobs:
           - name: Release Template (arm64)
             cache-name: linux-template-arm64
             target: template_release
-            sconsflags: arch=arm64 use_llvm=yes ${{ github.event.client_payload.production && 'production=yes' || '' }}
+            sconsflags: arch=arm64 use_llvm=yes ${{ github.event.client_payload.production && 'production=yes' || '' }} lto=none
             mono: false
             arm: true
             skip: true
@@ -466,7 +462,7 @@ jobs:
           - name: Debug Template w/ Mono (arm64)
             cache-name: linux-debug-template-mono-arm64
             target: template_debug
-            sconsflags: module_mono_enabled=yes arch=arm64 use_llvm=yes ${{ github.event.client_payload.production && 'production=yes' || '' }}
+            sconsflags: module_mono_enabled=yes arch=arm64 use_llvm=yes ${{ github.event.client_payload.production && 'production=yes' || '' }} lto=none
             mono: true
             arm: true
             skip: true
@@ -474,7 +470,7 @@ jobs:
           - name: Debug Template (arm64)
             cache-name: linux-debug-template-arm64
             target: template_debug
-            sconsflags: arch=arm64 use_llvm=yes ${{ github.event.client_payload.production && 'production=yes' || '' }}
+            sconsflags: arch=arm64 use_llvm=yes ${{ github.event.client_payload.production && 'production=yes' || '' }} lto=none
             mono: false
             arm: true
             skip: true
@@ -482,7 +478,7 @@ jobs:
           - name: Release Template w/ Mono (arm32)
             cache-name: linux-template-mono-arm32
             target: template_release
-            sconsflags: module_mono_enabled=yes arch=arm32 use_llvm=yes ${{ github.event.client_payload.production && 'production=yes' || '' }}
+            sconsflags: module_mono_enabled=yes arch=arm32 use_llvm=yes ${{ github.event.client_payload.production && 'production=yes' || '' }} lto=none
             mono: true
             arm: true
             skip: true
@@ -490,7 +486,7 @@ jobs:
           - name: Release Template (arm32)
             cache-name: linux-template-arm32
             target: template_release
-            sconsflags: arch=arm32 use_llvm=yes ${{ github.event.client_payload.production && 'production=yes' || '' }}
+            sconsflags: arch=arm32 use_llvm=yes ${{ github.event.client_payload.production && 'production=yes' || '' }} lto=none
             mono: false
             arm: true
             skip: true
@@ -498,7 +494,7 @@ jobs:
           - name: Debug Template w/ Mono (arm32)
             cache-name: linux-debug-template-mono-arm32
             target: template_debug
-            sconsflags: module_mono_enabled=yes arch=arm32 use_llvm=yes ${{ github.event.client_payload.production && 'production=yes' || '' }}
+            sconsflags: module_mono_enabled=yes arch=arm32 use_llvm=yes ${{ github.event.client_payload.production && 'production=yes' || '' }} lto=none
             mono: true
             arm: true
             skip: true
@@ -506,7 +502,7 @@ jobs:
           - name: Debug Template (arm32)
             cache-name: linux-debug-template-arm32
             target: template_debug
-            sconsflags: arch=arm32 use_llvm=yes ${{ github.event.client_payload.production && 'production=yes' || '' }}
+            sconsflags: arch=arm32 use_llvm=yes ${{ github.event.client_payload.production && 'production=yes' || '' }} lto=none
             mono: false
             arm: true
             skip: true
