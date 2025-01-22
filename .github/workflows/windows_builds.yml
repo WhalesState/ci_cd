@@ -32,8 +32,7 @@ on:
 env:
   # Used for the cache key. Add version suffix to force clean build.
   GODOT_BASE_BRANCH: blazium-dev
-  SCONSFLAGS: verbose=yes warnings=no progress=no #"angle_libs=${{github.workspace}}/deps/angle"
-  D3D12FLAGS: d3d12=yes "mesa_libs=${{github.workspace}}/deps/mesa" "agility_sdk_path=${{github.workspace}}/bin/build_deps/agility_sdk"
+  SCONSFLAGS: verbose=yes warnings=no progress=no #d3d12=yes "mesa_libs=${{github.workspace}}/deps/mesa" "angle_libs=${{github.workspace}}/deps/angle"
   SCONS_CACHE_MSVC_CONFIG: true
   DEPLOY_TYPE: windows
 
@@ -107,28 +106,24 @@ jobs:
             target: editor
             sconsflags: arch=x86_64  ${{ github.event.client_payload.production && 'production=yes' || '' }}
             mono: false
-            d3d12: true
 
           - name: Editor w/ Mono (64bit)
             cache-name: windows-editor-mono-64bit
             target: editor
             sconsflags: module_mono_enabled=yes arch=x86_64  ${{ github.event.client_payload.production && 'production=yes' || '' }}
             mono: true
-            d3d12: true
             
           - name: Editor (32bit)
             cache-name: windows-editor-32bit
             target: editor
             sconsflags: arch=x86_32  ${{ github.event.client_payload.production && 'production=yes' || '' }}
             mono: false
-            d3d12: true
 
           - name: Editor w/ Mono (32bit)
             cache-name: windows-editor-mono-32bit
             target: editor
             sconsflags: module_mono_enabled=yes arch=x86_32  ${{ github.event.client_payload.production && 'production=yes' || '' }}
             mono: true
-            d3d12: true
             
           - name: Editor (arm64)
             cache-name: windows-editor-arm64
@@ -137,7 +132,6 @@ jobs:
             mono: false
             arm: true
             skip: false
-            d3d12: true
 
           - name: Editor w/ Mono (arm64)
             cache-name: windows-editor-mono-arm64
@@ -146,7 +140,6 @@ jobs:
             mono: true
             arm: true
             skip: false
-            d3d12: true
 
           - name: Editor (arm32)
             cache-name: windows-editor-arm32
@@ -155,7 +148,6 @@ jobs:
             mono: false
             arm: true
             skip: false
-            d3d12: false
 
           - name: Editor w/ Mono (arm32)
             cache-name: windows-editor-mono-arm32
@@ -164,7 +156,6 @@ jobs:
             mono: true
             arm: true
             skip: false
-            d3d12: false
 
     steps:
       - name: Skip Action?
@@ -362,7 +353,6 @@ jobs:
           rm -rf temp_extract monoglue.tar.gz
 
       - name: Download Direct3D 12 SDK components
-        if: matrix.d3d12
         run: |
           python ./misc/scripts/install_d3d12_sdk_windows.py
 
@@ -373,7 +363,6 @@ jobs:
           angle_folder: "${{ github.workspace }}/deps/angle"
 
       - name: Download Mesa Libraries
-        if: matrix.d3d12
         uses: ./.github/actions/download-mesa-action
         with:
           mesa_url_base: "https://github.com/godotengine/godot-nir-static/releases/download/23.1.9-1/godot-nir-static"
@@ -390,6 +379,7 @@ jobs:
         if: matrix.mono
         run: |
           ./modules/mono/build_scripts/build_assemblies.py --godot-output-dir=./bin --godot-platform=windows
+
 
       - name: Save Godot build cache
         uses: ./.github/actions/godot-cache-save
@@ -410,10 +400,6 @@ jobs:
           source: ${{ matrix.cache-name }}-${{ github.event.client_payload.type || 'nightly' }}.tar.gz
           out_dir: ${{ env.DEPLOY_TYPE }}/${{ github.event.client_payload.type || 'nightly' }}${{ startsWith(matrix.target, 'template_') && '/template' || '' }}
 
-      - name: Clean D3D12 deps
-        if: matrix.d3d12
-        run: |
-          rm -rf "${{ github.workspace }}/bin/build_deps"
 
       - name: Upload artifact
         uses: ./.github/actions/upload-artifact
@@ -455,56 +441,48 @@ jobs:
             target: template_release
             sconsflags: module_mono_enabled=yes arch=x86_64  ${{ github.event.client_payload.production && 'production=yes' || '' }}
             mono: true
-            d3d12: true
 
           - name: Template (64bit)
             cache-name: windows-template-64bit
             target: template_release
             sconsflags: arch=x86_64  ${{ github.event.client_payload.production && 'production=yes' || '' }}
             mono: false
-            d3d12: true
 
           - name: Template w/ Mono (64bit)
             cache-name: windows-debug-template-mono-64bit
             target: template_debug
             sconsflags: module_mono_enabled=yes arch=x86_64  ${{ github.event.client_payload.production && 'production=yes' || '' }}
             mono: true
-            d3d12: true
 
           - name: Template (64bit)
             cache-name: windows-debug-template-64bit
             target: template_debug
             sconsflags: arch=x86_64 ${{ github.event.client_payload.production && 'production=yes' || '' }}
             mono: false
-            d3d12: true
 
           - name: Template w/ Mono (32bit)
             cache-name: windows-template-mono-32bit
             target: template_release
             sconsflags: module_mono_enabled=yes arch=x86_32  ${{ github.event.client_payload.production && 'production=yes' || '' }}
             mono: true
-            d3d12: true
 
           - name: Template (32bit)
             cache-name: windows-template-32bit
             target: template_release
             sconsflags: arch=x86_32  ${{ github.event.client_payload.production && 'production=yes' || '' }}
             mono: false
-            d3d12: true
 
           - name: Template w/ Mono (32bit)
             cache-name: windows-debug-template-mono-32bit
             target: template_debug
             sconsflags: module_mono_enabled=yes arch=x86_32  ${{ github.event.client_payload.production && 'production=yes' || '' }}
             mono: true
-            d3d12: true
 
           - name: Template (32bit)
             cache-name: windows-debug-template-32bit
             target: template_debug
             sconsflags: arch=x86_32 ${{ github.event.client_payload.production && 'production=yes' || '' }}
             mono: false
-            d3d12: true
 
           - name: Template w/ Mono (arm64)
             cache-name: windows-template-mono-arm64
@@ -512,7 +490,6 @@ jobs:
             sconsflags: module_mono_enabled=yes arch=arm64 use_llvm=yes ${{ github.event.client_payload.production && 'production=yes' || '' }} lto=none
             mono: true
             arm: true
-            d3d12: true
 
           - name: Template (arm64)
             cache-name: windows-template-arm64
@@ -520,7 +497,6 @@ jobs:
             sconsflags: arch=arm64 use_llvm=yes  ${{ github.event.client_payload.production && 'production=yes' || '' }} lto=none
             mono: false
             arm: true
-            d3d12: true
 
           - name: Template w/ Mono (arm64)
             cache-name: windows-debug-template-mono-arm64
@@ -528,7 +504,6 @@ jobs:
             sconsflags: module_mono_enabled=yes arch=arm64 use_llvm=yes  ${{ github.event.client_payload.production && 'production=yes' || '' }} lto=none
             mono: true
             arm: true
-            d3d12: true
 
           - name: Template (arm64)
             cache-name: windows-debug-template-arm64
@@ -536,7 +511,6 @@ jobs:
             sconsflags: arch=arm64 use_llvm=yes ${{ github.event.client_payload.production && 'production=yes' || '' }} lto=none
             mono: false
             arm: true
-            d3d12: true
 
           - name: Template w/ Mono (arm32)
             cache-name: windows-template-mono-arm32
@@ -544,7 +518,6 @@ jobs:
             sconsflags: module_mono_enabled=yes arch=arm32 use_llvm=yes ${{ github.event.client_payload.production && 'production=yes' || '' }} lto=none
             mono: true
             arm: true
-            d3d12: false
 
           - name: Template (arm32)
             cache-name: windows-template-arm32
@@ -552,7 +525,6 @@ jobs:
             sconsflags: arch=arm32 use_llvm=yes  ${{ github.event.client_payload.production && 'production=yes' || '' }} lto=none
             mono: false
             arm: true
-            d3d12: false
 
           - name: Template w/ Mono (arm32)
             cache-name: windows-debug-template-mono-arm32
@@ -560,7 +532,6 @@ jobs:
             sconsflags: module_mono_enabled=yes arch=arm32 use_llvm=yes  ${{ github.event.client_payload.production && 'production=yes' || '' }} lto=none
             mono: true
             arm: true
-            d3d12: false
 
           - name: Template (arm32)
             cache-name: windows-debug-template-arm32
@@ -568,7 +539,6 @@ jobs:
             sconsflags: arch=arm32 use_llvm=yes ${{ github.event.client_payload.production && 'production=yes' || '' }} lto=none
             mono: false
             arm: true
-            d3d12: false
 
 
     steps:
@@ -760,7 +730,6 @@ jobs:
           rm -rf temp_extract monoglue.tar.gz
 
       - name: Download Direct3D 12 SDK components
-        if: matrix.d3d12
         run: |
           python ./misc/scripts/install_d3d12_sdk_windows.py
 
@@ -771,7 +740,6 @@ jobs:
           angle_folder: "${{ github.workspace }}/deps/angle"
 
       - name: Download Mesa Libraries
-        if: matrix.d3d12
         uses: ./.github/actions/download-mesa-action
         with:
           mesa_url_base: "https://github.com/godotengine/godot-nir-static/releases/download/23.1.9-1/godot-nir-static"
@@ -780,7 +748,7 @@ jobs:
       - name: Compilation
         uses: ./.github/actions/godot-build
         with:
-          sconsflags: ${{ matrix.sconsflags }} ${{ matrix.d3d12 && env.D3D12FLAGS || '' }} ${{ env.SCONSFLAGS }}
+          sconsflags: ${{ matrix.sconsflags }} ${{ env.SCONSFLAGS }}
           platform: windows
           target: ${{ matrix.target }}
           mingw-prefix: ${{ matrix.mingw || '' }}
@@ -804,10 +772,6 @@ jobs:
           source: ${{ matrix.cache-name }}-${{ github.event.client_payload.type || 'nightly' }}.tar.gz
           out_dir: ${{ env.DEPLOY_TYPE }}/${{ github.event.client_payload.type || 'nightly' }}${{ startsWith(matrix.target, 'template_') && '/template' || '' }}
 
-      - name: Clean D3D12 deps
-        if: matrix.d3d12
-        run: |
-          rm -rf "${{ github.workspace }}/bin/build_deps"
 
       - name: Upload artifact
         uses: ./.github/actions/upload-artifact
