@@ -32,7 +32,8 @@ on:
 env:
   # Used for the cache key. Add version suffix to force clean build.
   GODOT_BASE_BRANCH: blazium-dev
-  SCONSFLAGS: verbose=yes warnings=no progress=no #d3d12=yes "mesa_libs=${{github.workspace}}/deps/mesa" "angle_libs=${{github.workspace}}/deps/angle"
+  SCONSFLAGS: verbose=yes warnings=no progress=no #"angle_libs=${{github.workspace}}/deps/angle"
+  D3D12FLAGS: d3d12=yes "mesa_libs=${{ github.workspace }}/deps/mesa" "agility_sdk_path=${{github.workspace}}/bin/build_deps/agility_sdk"
   SCONS_CACHE_MSVC_CONFIG: true
   DEPLOY_TYPE: windows
 
@@ -106,24 +107,28 @@ jobs:
             target: editor
             sconsflags: arch=x86_64  ${{ github.event.client_payload.production && 'production=yes' || '' }}
             mono: false
+            d3d12: true
 
           - name: Editor w/ Mono (64bit)
             cache-name: windows-editor-mono-64bit
             target: editor
             sconsflags: module_mono_enabled=yes arch=x86_64  ${{ github.event.client_payload.production && 'production=yes' || '' }}
             mono: true
+            d3d12: true
             
           - name: Editor (32bit)
             cache-name: windows-editor-32bit
             target: editor
             sconsflags: arch=x86_32  ${{ github.event.client_payload.production && 'production=yes' || '' }}
             mono: false
+            d3d12: true
 
           - name: Editor w/ Mono (32bit)
             cache-name: windows-editor-mono-32bit
             target: editor
             sconsflags: module_mono_enabled=yes arch=x86_32  ${{ github.event.client_payload.production && 'production=yes' || '' }}
             mono: true
+            d3d12: true
             
           - name: Editor (arm64)
             cache-name: windows-editor-arm64
@@ -132,6 +137,7 @@ jobs:
             mono: false
             arm: true
             skip: false
+            d3d12: true
 
           - name: Editor w/ Mono (arm64)
             cache-name: windows-editor-mono-arm64
@@ -140,6 +146,7 @@ jobs:
             mono: true
             arm: true
             skip: false
+            d3d12: true
 
           - name: Editor (arm32)
             cache-name: windows-editor-arm32
@@ -148,6 +155,7 @@ jobs:
             mono: false
             arm: true
             skip: false
+            d3d12: false
 
           - name: Editor w/ Mono (arm32)
             cache-name: windows-editor-mono-arm32
@@ -156,6 +164,7 @@ jobs:
             mono: true
             arm: true
             skip: false
+            d3d12: false
 
     steps:
       - name: Skip Action?
@@ -267,30 +276,30 @@ jobs:
             llvm \
             gcc \
             g++ \
-            mingw-w64 \
-            mingw-w64-common \
-            mingw-w64-tools \
             libspeechd-dev \
             speech-dispatcher \
             fontconfig \
             libfontconfig-dev \
             dotnet-sdk-8.0 \
-            gcc-mingw-w64 g++-mingw-w64 directx-headers-dev
-          sudo update-alternatives --config x86_64-w64-mingw32-g++
-          sudo update-alternatives --set x86_64-w64-mingw32-g++ /usr/bin/x86_64-w64-mingw32-g++-posix
-          sudo update-alternatives --config x86_64-w64-mingw32-gcc
-          sudo update-alternatives --set x86_64-w64-mingw32-gcc /usr/bin/x86_64-w64-mingw32-gcc-posix
-          sudo update-alternatives --config i686-w64-mingw32-g++
-          sudo update-alternatives --set i686-w64-mingw32-g++ /usr/bin/i686-w64-mingw32-g++-posix
-          sudo update-alternatives --config i686-w64-mingw32-gcc
-          sudo update-alternatives --set i686-w64-mingw32-gcc /usr/bin/i686-w64-mingw32-gcc-posix
+            directx-headers-dev
+          # mingw-w64 \
+          # mingw-w64-common \
+          # mingw-w64-tools \
+          #   gcc-mingw-w64 g++-mingw-w64
+          # sudo update-alternatives --config x86_64-w64-mingw32-g++
+          # sudo update-alternatives --set x86_64-w64-mingw32-g++ /usr/bin/x86_64-w64-mingw32-g++-posix
+          # sudo update-alternatives --config x86_64-w64-mingw32-gcc
+          # sudo update-alternatives --set x86_64-w64-mingw32-gcc /usr/bin/x86_64-w64-mingw32-gcc-posix
+          # sudo update-alternatives --config i686-w64-mingw32-g++
+          # sudo update-alternatives --set i686-w64-mingw32-g++ /usr/bin/i686-w64-mingw32-g++-posix
+          # sudo update-alternatives --config i686-w64-mingw32-gcc
+          # sudo update-alternatives --set i686-w64-mingw32-gcc /usr/bin/i686-w64-mingw32-gcc-posix
           sudo rm -rf /var/lib/apt/lists/*
           sudo apt-get purge -y --auto-remove
           sudo apt-get autoremove
           sudo apt-get clean
 
       - name: Install llvm-mingw
-        if: matrix.arm
         run: |
           curl -LO https://github.com/mstorsjo/llvm-mingw/releases/download/20240619/llvm-mingw-20240619-ucrt-ubuntu-20.04-x86_64.tar.xz && \
           tar xf llvm-mingw-20240619-ucrt-ubuntu-20.04-x86_64.tar.xz && \
@@ -301,6 +310,7 @@ jobs:
       - name: Download and extract llvm-mingw SDK
         env:
           CURRENT_DIR: ${{ github.workspace }}
+        if: matrix.arm
         run: |
           mkdir -p "$CURRENT_DIR/sdks"
           cd "$CURRENT_DIR/sdks"
@@ -353,25 +363,27 @@ jobs:
           rm -rf temp_extract monoglue.tar.gz
 
       - name: Download Direct3D 12 SDK components
+        if: matrix.d3d12
         run: |
           python ./misc/scripts/install_d3d12_sdk_windows.py
 
-      - name: Download ANGLE Libraries
-        uses: ./.github/actions/download-angle-action
-        with:
-          angle_url_base: "https://github.com/godotengine/godot-angle-static/releases/download/chromium%2F6601.2/godot-angle-static"
-          angle_folder: "${{ github.workspace }}/deps/angle"
-
+      # - name: Download ANGLE Libraries
+      #   uses: ./.github/actions/download-angle-action
+      #   with:
+      #     angle_url_base: "https://github.com/godotengine/godot-angle-static/releases/download/chromium%2F6601.2/godot-angle-static"
+      #     angle_folder: "${{ github.workspace }}/deps/angle"
+      
       - name: Download Mesa Libraries
+        if: matrix.d3d12
         uses: ./.github/actions/download-mesa-action
         with:
-          mesa_url_base: "https://github.com/godotengine/godot-nir-static/releases/download/23.1.9-1/godot-nir-static"
+          mesa_url_base: "https://github.com/blazium-engine/blazium-nir-static/releases/download/23.1.9-1/godot-nir-static"
           mesa_folder: "${{ github.workspace }}/deps/mesa"
-      
+
       - name: Compilation
         uses: ./.github/actions/godot-build
         with:
-          sconsflags: ${{ matrix.sconsflags }} ${{ env.SCONSFLAGS }}
+          sconsflags: ${{ matrix.sconsflags }} ${{ matrix.d3d12 && env.D3D12FLAGS || '' }} ${{ env.SCONSFLAGS }}
           platform: windows
           target: ${{ matrix.target }}
 
@@ -379,7 +391,6 @@ jobs:
         if: matrix.mono
         run: |
           ./modules/mono/build_scripts/build_assemblies.py --godot-output-dir=./bin --godot-platform=windows
-
 
       - name: Save Godot build cache
         uses: ./.github/actions/godot-cache-save
@@ -400,6 +411,10 @@ jobs:
           source: ${{ matrix.cache-name }}-${{ github.event.client_payload.type || 'nightly' }}.tar.gz
           out_dir: ${{ env.DEPLOY_TYPE }}/${{ github.event.client_payload.type || 'nightly' }}${{ startsWith(matrix.target, 'template_') && '/template' || '' }}
 
+      - name: Clean D3D12 deps
+        if: matrix.d3d12
+        run: |
+          rm -rf "${{ github.workspace }}/bin/build_deps"
 
       - name: Upload artifact
         uses: ./.github/actions/upload-artifact
@@ -441,48 +456,56 @@ jobs:
             target: template_release
             sconsflags: module_mono_enabled=yes arch=x86_64  ${{ github.event.client_payload.production && 'production=yes' || '' }}
             mono: true
+            d3d12: true
 
           - name: Template (64bit)
             cache-name: windows-template-64bit
             target: template_release
             sconsflags: arch=x86_64  ${{ github.event.client_payload.production && 'production=yes' || '' }}
             mono: false
+            d3d12: true
 
           - name: Template w/ Mono (64bit)
             cache-name: windows-debug-template-mono-64bit
             target: template_debug
             sconsflags: module_mono_enabled=yes arch=x86_64  ${{ github.event.client_payload.production && 'production=yes' || '' }}
             mono: true
+            d3d12: true
 
           - name: Template (64bit)
             cache-name: windows-debug-template-64bit
             target: template_debug
             sconsflags: arch=x86_64 ${{ github.event.client_payload.production && 'production=yes' || '' }}
             mono: false
+            d3d12: true
 
           - name: Template w/ Mono (32bit)
             cache-name: windows-template-mono-32bit
             target: template_release
             sconsflags: module_mono_enabled=yes arch=x86_32  ${{ github.event.client_payload.production && 'production=yes' || '' }}
             mono: true
+            d3d12: true
 
           - name: Template (32bit)
             cache-name: windows-template-32bit
             target: template_release
             sconsflags: arch=x86_32  ${{ github.event.client_payload.production && 'production=yes' || '' }}
             mono: false
+            d3d12: true
 
           - name: Template w/ Mono (32bit)
             cache-name: windows-debug-template-mono-32bit
             target: template_debug
             sconsflags: module_mono_enabled=yes arch=x86_32  ${{ github.event.client_payload.production && 'production=yes' || '' }}
             mono: true
+            d3d12: true
 
           - name: Template (32bit)
             cache-name: windows-debug-template-32bit
             target: template_debug
             sconsflags: arch=x86_32 ${{ github.event.client_payload.production && 'production=yes' || '' }}
             mono: false
+            d3d12: true
 
           - name: Template w/ Mono (arm64)
             cache-name: windows-template-mono-arm64
@@ -490,6 +513,7 @@ jobs:
             sconsflags: module_mono_enabled=yes arch=arm64 use_llvm=yes ${{ github.event.client_payload.production && 'production=yes' || '' }} lto=none
             mono: true
             arm: true
+            d3d12: true
 
           - name: Template (arm64)
             cache-name: windows-template-arm64
@@ -497,6 +521,7 @@ jobs:
             sconsflags: arch=arm64 use_llvm=yes  ${{ github.event.client_payload.production && 'production=yes' || '' }} lto=none
             mono: false
             arm: true
+            d3d12: true
 
           - name: Template w/ Mono (arm64)
             cache-name: windows-debug-template-mono-arm64
@@ -504,6 +529,7 @@ jobs:
             sconsflags: module_mono_enabled=yes arch=arm64 use_llvm=yes  ${{ github.event.client_payload.production && 'production=yes' || '' }} lto=none
             mono: true
             arm: true
+            d3d12: true
 
           - name: Template (arm64)
             cache-name: windows-debug-template-arm64
@@ -511,6 +537,7 @@ jobs:
             sconsflags: arch=arm64 use_llvm=yes ${{ github.event.client_payload.production && 'production=yes' || '' }} lto=none
             mono: false
             arm: true
+            d3d12: true
 
           - name: Template w/ Mono (arm32)
             cache-name: windows-template-mono-arm32
@@ -518,6 +545,7 @@ jobs:
             sconsflags: module_mono_enabled=yes arch=arm32 use_llvm=yes ${{ github.event.client_payload.production && 'production=yes' || '' }} lto=none
             mono: true
             arm: true
+            d3d12: false
 
           - name: Template (arm32)
             cache-name: windows-template-arm32
@@ -525,6 +553,7 @@ jobs:
             sconsflags: arch=arm32 use_llvm=yes  ${{ github.event.client_payload.production && 'production=yes' || '' }} lto=none
             mono: false
             arm: true
+            d3d12: false
 
           - name: Template w/ Mono (arm32)
             cache-name: windows-debug-template-mono-arm32
@@ -532,6 +561,7 @@ jobs:
             sconsflags: module_mono_enabled=yes arch=arm32 use_llvm=yes  ${{ github.event.client_payload.production && 'production=yes' || '' }} lto=none
             mono: true
             arm: true
+            d3d12: false
 
           - name: Template (arm32)
             cache-name: windows-debug-template-arm32
@@ -539,6 +569,7 @@ jobs:
             sconsflags: arch=arm32 use_llvm=yes ${{ github.event.client_payload.production && 'production=yes' || '' }} lto=none
             mono: false
             arm: true
+            d3d12: false
 
 
     steps:
@@ -650,31 +681,33 @@ jobs:
             llvm \
             gcc \
             g++ \
-            mingw-w64 \
-            mingw-w64-common \
-            mingw-w64-tools \
             libspeechd-dev \
             speech-dispatcher \
             fontconfig \
             libfontconfig-dev \
-            dotnet-sdk-8.0 \
-            libvulkan-dev \
-            gcc-mingw-w64 g++-mingw-w64 directx-headers-dev zlib1g-dev
-          sudo update-alternatives --config x86_64-w64-mingw32-g++
-          sudo update-alternatives --set x86_64-w64-mingw32-g++ /usr/bin/x86_64-w64-mingw32-g++-posix
-          sudo update-alternatives --config x86_64-w64-mingw32-gcc
-          sudo update-alternatives --set x86_64-w64-mingw32-gcc /usr/bin/x86_64-w64-mingw32-gcc-posix
-          sudo update-alternatives --config i686-w64-mingw32-g++
-          sudo update-alternatives --set i686-w64-mingw32-g++ /usr/bin/i686-w64-mingw32-g++-posix
-          sudo update-alternatives --config i686-w64-mingw32-gcc
-          sudo update-alternatives --set i686-w64-mingw32-gcc /usr/bin/i686-w64-mingw32-gcc-posix
+            directx-headers-dev \
+            dotnet-sdk-8.0
+          # libvulkan-dev \
+          # zlib1g-dev \
+          # mingw-w64 \
+          # mingw-w64-common \
+          # mingw-w64-tools \
+          # gcc-mingw-w64 \
+          # g++-mingw-w64 \
+          # sudo update-alternatives --config x86_64-w64-mingw32-g++
+          # sudo update-alternatives --set x86_64-w64-mingw32-g++ /usr/bin/x86_64-w64-mingw32-g++-posix
+          # sudo update-alternatives --config x86_64-w64-mingw32-gcc
+          # sudo update-alternatives --set x86_64-w64-mingw32-gcc /usr/bin/x86_64-w64-mingw32-gcc-posix
+          # sudo update-alternatives --config i686-w64-mingw32-g++
+          # sudo update-alternatives --set i686-w64-mingw32-g++ /usr/bin/i686-w64-mingw32-g++-posix
+          # sudo update-alternatives --config i686-w64-mingw32-gcc
+          # sudo update-alternatives --set i686-w64-mingw32-gcc /usr/bin/i686-w64-mingw32-gcc-posix
           sudo rm -rf /var/lib/apt/lists/*
           sudo apt-get purge -y --auto-remove
           sudo apt-get autoremove
           sudo apt-get clean
 
       - name: Install llvm-mingw
-        if: matrix.arm
         run: |
           curl -LO https://github.com/mstorsjo/llvm-mingw/releases/download/20240619/llvm-mingw-20240619-ucrt-ubuntu-20.04-x86_64.tar.xz && \
           tar xf llvm-mingw-20240619-ucrt-ubuntu-20.04-x86_64.tar.xz && \
@@ -682,6 +715,18 @@ jobs:
           cd llvm-mingw-20240619-ucrt-ubuntu-20.04-x86_64
           echo "MINGW_PREFIX=$(pwd)" >> $GITHUB_ENV
 
+      - name: Download and extract llvm-mingw SDK
+        env:
+          CURRENT_DIR: ${{ github.workspace }}
+        if: matrix.arm
+        run: |
+          mkdir -p "$CURRENT_DIR/sdks"
+          cd "$CURRENT_DIR/sdks"
+          curl -LO https://github.com/mstorsjo/llvm-mingw/releases/download/20241015/llvm-mingw-20241015-msvcrt-ubuntu-20.04-x86_64.tar.xz
+          xz -dc llvm-mingw-20241015-msvcrt-ubuntu-20.04-x86_64.tar.xz | tar -xvf -
+          rm -f llvm-mingw-20241015-msvcrt-ubuntu-20.04-x86_64.tar.xz
+          cd llvm-mingw-20241015-msvcrt-ubuntu-20.04-x86_64
+          echo "LLVM_MINGW=$(pwd)" >> $GITHUB_ENV
 
       - name: Free disk space on runner
         run: |
@@ -730,28 +775,29 @@ jobs:
           rm -rf temp_extract monoglue.tar.gz
 
       - name: Download Direct3D 12 SDK components
+        if: matrix.d3d12
         run: |
           python ./misc/scripts/install_d3d12_sdk_windows.py
 
-      - name: Download ANGLE Libraries
-        uses: ./.github/actions/download-angle-action
-        with:
-          angle_url_base: "https://github.com/godotengine/godot-angle-static/releases/download/chromium%2F6601.2/godot-angle-static"
-          angle_folder: "${{ github.workspace }}/deps/angle"
+      # - name: Download ANGLE Libraries
+      #   uses: ./.github/actions/download-angle-action
+      #   with:
+      #     angle_url_base: "https://github.com/godotengine/godot-angle-static/releases/download/chromium%2F6601.2/godot-angle-static"
+      #     angle_folder: "${{ github.workspace }}/deps/angle"
 
       - name: Download Mesa Libraries
+        if: matrix.d3d12
         uses: ./.github/actions/download-mesa-action
         with:
-          mesa_url_base: "https://github.com/godotengine/godot-nir-static/releases/download/23.1.9-1/godot-nir-static"
+          mesa_url_base: "https://github.com/blazium-engine/blazium-nir-static/releases/download/23.1.9-1/godot-nir-static"
           mesa_folder: "${{ github.workspace }}/deps/mesa"
-      
+
       - name: Compilation
         uses: ./.github/actions/godot-build
         with:
-          sconsflags: ${{ matrix.sconsflags }} ${{ env.SCONSFLAGS }}
+          sconsflags: ${{ matrix.sconsflags }} ${{ matrix.d3d12 && env.D3D12FLAGS || '' }} ${{ env.SCONSFLAGS }}
           platform: windows
           target: ${{ matrix.target }}
-          mingw-prefix: ${{ matrix.mingw || '' }}
 
       - name: Save Godot build cache
         uses: ./.github/actions/godot-cache-save
@@ -772,6 +818,10 @@ jobs:
           source: ${{ matrix.cache-name }}-${{ github.event.client_payload.type || 'nightly' }}.tar.gz
           out_dir: ${{ env.DEPLOY_TYPE }}/${{ github.event.client_payload.type || 'nightly' }}${{ startsWith(matrix.target, 'template_') && '/template' || '' }}
 
+      - name: Clean D3D12 deps
+        if: matrix.d3d12
+        run: |
+          rm -rf "${{ github.workspace }}/bin/build_deps"
 
       - name: Upload artifact
         uses: ./.github/actions/upload-artifact
